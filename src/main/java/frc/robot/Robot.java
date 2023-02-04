@@ -56,6 +56,7 @@ public class Robot extends TimedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
+        m_robotContainer.controlArm();
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
@@ -73,12 +74,14 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
+/* !*!*!* todo fixme
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
+*/
     }
 
     /** This function is called periodically during autonomous. */

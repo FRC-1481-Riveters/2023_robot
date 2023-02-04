@@ -4,6 +4,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.XboxController;
+
 
 public final class Constants {
 
@@ -20,9 +22,9 @@ public final class Constants {
 
     public static final class DriveConstants {
 
-        public static final double kTrackWidth = Units.inchesToMeters(20.5);
+        public static final double kTrackWidth = Units.inchesToMeters(19.5);
         // Distance between right and left wheels
-        public static final double kWheelBase = Units.inchesToMeters(20.5);
+        public static final double kWheelBase = Units.inchesToMeters(26.5);
         // Distance between front and back wheels
         public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
                 new Translation2d(kWheelBase / 2, kTrackWidth / 2),
@@ -64,10 +66,10 @@ public final class Constants {
         public static final boolean kBackLeftDriveAbsoluteEncoderReversed = false;
         public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
 
-        public static final double kFrontLeftDriveAbsoluteEncoderOffset  = -4.1;
-        public static final double kFrontRightDriveAbsoluteEncoderOffset = 143.4;
-        public static final double kBackLeftDriveAbsoluteEncoderOffset   = 29.8;
-        public static final double kBackRightDriveAbsoluteEncoderOffset  = 165.4;
+        public static final double kFrontLeftDriveAbsoluteEncoderOffset  = 137.7;
+        public static final double kFrontRightDriveAbsoluteEncoderOffset = -49.8;
+        public static final double kBackLeftDriveAbsoluteEncoderOffset   = -38.5;
+        public static final double kBackRightDriveAbsoluteEncoderOffset  = 8.8;
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 4;
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;
@@ -95,8 +97,14 @@ public final class Constants {
                         kMaxAngularAccelerationRadiansPerSecondSquared);
     }
 
+    public static final class ArmConstants {
+        public static final int ARM_SHOULDER_MOTOR = 40;
+        public static final int ARM_SHOULDER_MOTOR_FOLLOWER = 41;
+    }
+
     public static final class OIConstants {
         public static final int kDriverControllerPort = 0;
+        public static final int kOperatorControllerPort = 1;
 
         public static final int kDriverYAxis = 1;
         public static final int kDriverXAxis = 0;

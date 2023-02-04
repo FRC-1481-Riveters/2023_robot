@@ -50,10 +50,13 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderOffset,
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
-    private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort, "CANivore" );
+    private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort );
 
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
+    
+    private boolean isPracticeRobot;
+    
 
     public SwerveSubsystem() {
         new Thread(() -> {
@@ -94,7 +97,7 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometer.update(getRotation2d(), new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
-      
+        
         SmartDashboard.putNumber("Robot Heading", getRotation2d().getRadians() );
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
         frontLeft.printAngle();

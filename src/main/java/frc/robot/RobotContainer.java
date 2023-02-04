@@ -7,6 +7,7 @@ import java.util.List;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,23 +27,35 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.SwerveJoystickCmd;
 import frc.robot.subsystems.SwerveSubsystem;
+import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.subsystems.ArmSubsystem;
 
 public class RobotContainer {
-
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+    private final ArmSubsystem armSubsystem = new ArmSubsystem();
 
-    private final Joystick driverJoystick = new Joystick(OIConstants.kDriverControllerPort);
+    private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
+    private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
 
     private final String trajectoryJSON = "paths/HalfCircle.wpilib.json";
 
     private Trajectory circleTrajectory = new Trajectory();
 
-    public RobotContainer() {
+    private boolean isPracticeRobot;
+
+    public RobotContainer() 
+    {
+        DigitalInput input;
+
+        input = new DigitalInput(9);
+        isPracticeRobot = !input.get();
+        input.close();
+        
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
-                () -> -driverJoystick.getRawAxis(OIConstants.kDriverYAxis),
-                () -> -driverJoystick.getRawAxis(OIConstants.kDriverXAxis),
-                () -> -driverJoystick.getRawAxis(OIConstants.kDriverRotAxis),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxis),
                 () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)));
 
         configureButtonBindings();
@@ -53,6 +66,24 @@ public class RobotContainer {
    } catch (IOException ex) {
       DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
    }
+    }
+
+    public void controlArm()
+    {
+        double axis;
+        double output;
+        
+        axis = operatorJoystick.getRawAxis(OIConstants.kDriverYAxis);
+        if( (axis < 0.25) && (axis > -0.25) )
+        { 
+           output = 0;
+        }
+        else
+        {
+           output = axis;// * 100;
+        }
+        armSubsystem.setShoulder( output );
+
     }
 
     private void configureButtonBindings() {

@@ -79,7 +79,8 @@ public class SwerveModule {
         double position;
         position = driveMotor.getSelectedSensorPosition();  // 0..2048 counts per revolution
         position = (position / 2048) * (14.0 / 50.0) * (28.0 / 16.0) * (15.0 / 60.0);
-        position = position * ModuleConstants.kWheelDiameterMeters * Math.PI;
+        position = -position * ModuleConstants.kWheelDiameterMeters * Math.PI;
+        SmartDashboard.putNumber("driving Position[" + absoluteEncoder.getDeviceID() + "]",position);
 
         return( position );
     }
