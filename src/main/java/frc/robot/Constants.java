@@ -98,8 +98,20 @@ public final class Constants {
     }
 
     public static final class ArmConstants {
-        public static final int ARM_SHOULDER_MOTOR = 40;
-        public static final int ARM_SHOULDER_MOTOR_FOLLOWER = 41;
+        public static final int ARM_SHOULDER_MOTOR = 41;
+        public static final int ARM_SHOULDER_MOTOR_FOLLOWER = 40;
+        public static final double ARM_SHOULDER_MOTOR_KF = 0.00;
+        public static final double ARM_SHOULDER_MOTOR_KP = 5.4;
+        public static final double ARM_SHOULDER_MOTOR_KI = 0; //0.0150;
+        public static final double ARM_SHOULDER_MOTOR_KD = 0; //0.0135;
+        public static final double ARM_SHOULDER_MOTOR_CRUISE = 800;
+        public static final double ARM_SHOULDER_MOTOR_ACCELERATION = 100;
+        public static final int ARM_SHOULDER_POSITION_SHELF = -1000;   
+        public static final int ARM_SHOULDER_POSITION_HIGH = -700;   
+        public static final int ARM_SHOULDER_POSITION_MID = -600;   
+        public static final int ARM_SHOULDER_POSITION_LOW = 0;
+
+        public static final int TALON_TIMEOUT_MS = 5000;
     }
 
     public static final class OIConstants {
