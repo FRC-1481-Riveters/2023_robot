@@ -41,13 +41,12 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.setNeutralMode(NeutralMode.Brake);
         m_extendMotor.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
         m_extendMotor.configRemoteFeedbackFilter(m_cancoder, 0);
-        m_extendMotor.configNeutralDeadband(0.10, ExtendConstants.TALON_TIMEOUT_MS);
         // Configure Talon  SRX output and sensor direction
-        m_extendMotor.setSensorPhase(false);
+        m_extendMotor.setSensorPhase(true);
         // Set peak current
-        m_extendMotor.configPeakCurrentLimit(15, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configPeakCurrentLimit(30, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(10, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(25, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);
@@ -59,10 +58,10 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.configMotionCruiseVelocity(ExtendConstants.EXTEND_MOTOR_CRUISE, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configMotionAcceleration(ExtendConstants.EXTEND_MOTOR_ACCELERATION, ExtendConstants.TALON_TIMEOUT_MS);
         // Set extend motion limits
-        m_extendMotor.configForwardSoftLimitEnable(true);
         m_extendMotor.configForwardSoftLimitThreshold(ExtendConstants.EXTEND_MOTOR_MAX);
-        m_extendMotor.configReverseSoftLimitEnable(true);
+        m_extendMotor.configForwardSoftLimitEnable(true);
         m_extendMotor.configReverseSoftLimitThreshold(ExtendConstants.EXTEND_MOTOR_MIN);
+        m_extendMotor.configReverseSoftLimitEnable(true);
 
     }
 

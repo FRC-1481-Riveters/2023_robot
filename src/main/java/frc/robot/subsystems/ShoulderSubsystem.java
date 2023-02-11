@@ -25,8 +25,10 @@ public class ShoulderSubsystem extends SubsystemBase {
 
     public ShoulderSubsystem() 
     {
-        m_shoulderMotor = new TalonSRX(ShoulderConstants.SHOULDER_MOTOR);
         m_shoulderMotorFollower = new TalonSRX(ShoulderConstants.SHOULDER_MOTOR_FOLLOWER);
+        m_shoulderMotor = new TalonSRX(ShoulderConstants.SHOULDER_MOTOR);
+        m_shoulderMotorFollower.follow(m_shoulderMotor);
+
         tab = Shuffleboard.getTab("Shoulder");
         kP = tab.add("kP", ShoulderConstants.SHOULDER_MOTOR_KP).getEntry();
         kI = tab.add("kI", ShoulderConstants.SHOULDER_MOTOR_KI).getEntry();
@@ -39,7 +41,7 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotor.configFactoryDefault();
         m_shoulderMotor.setNeutralMode(NeutralMode.Brake);
         m_shoulderMotor.configSelectedFeedbackSensor( FeedbackDevice.CTRE_MagEncoder_Absolute, 0, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.configNeutralDeadband(0.10, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configFeedbackNotContinuous(true, ShoulderConstants.TALON_TIMEOUT_MS);
         // Configure Talon  SRX output and sensor direction
         m_shoulderMotor.setSensorPhase(false);
         // Set peak current
@@ -64,15 +66,23 @@ public class ShoulderSubsystem extends SubsystemBase {
 
         m_shoulderMotorFollower.configFactoryDefault();
         m_shoulderMotor.setNeutralMode(NeutralMode.Brake);
-        m_shoulderMotorFollower.follow(m_shoulderMotor);
-        // Configure Talon  SRX output and sensor direction
-        m_shoulderMotorFollower.setSensorPhase(false);
         // Set peak current
-        m_shoulderMotorFollower.configPeakCurrentLimit(15, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotorFollower.configPeakCurrentDuration(200, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotorFollower.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotorFollower.enableCurrentLimit(true);
-    }
+        m_shoulderMotor.configPeakCurrentLimit(15, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configPeakCurrentDuration(200, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.enableCurrentLimit(true);
+        // Set Motion Magic gains in slot0
+        m_shoulderMotor.selectProfileSlot(0, 0);
+        m_shoulderMotor.config_kF(0, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kP(0, kP.getDouble(ShoulderConstants.SHOULDER_MOTOR_KP), ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kI(0, kI.getDouble(ShoulderConstants.SHOULDER_MOTOR_KI), ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kD(0, kD.getDouble(ShoulderConstants.SHOULDER_MOTOR_KD), ShoulderConstants.TALON_TIMEOUT_MS);
+        // Set acceleration and cruise velocity
+        m_shoulderMotor.configMotionCruiseVelocity(ShoulderConstants.SHOULDER_MOTOR_CRUISE, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configMotionAcceleration(ShoulderConstants.SHOULDER_MOTOR_ACCELERATION, ShoulderConstants.TALON_TIMEOUT_MS);
+        
+        m_shoulderMotorFollower.setNeutralMode(NeutralMode.Brake);
+        }
 
     @Override
     public void periodic() 

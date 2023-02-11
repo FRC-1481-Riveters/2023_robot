@@ -7,6 +7,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.FollowerType;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -27,9 +28,11 @@ public class WristSubsystem extends SubsystemBase {
 
     public WristSubsystem() 
     {
-        m_wristMotor = new TalonSRX(WristConstants.WRIST_MOTOR);
-        m_cancoder = new CANCoder(WristConstants.WRIST_MOTOR_CANCODER);
         m_wristMotorFollower = new TalonSRX(WristConstants.WRIST_MOTOR_FOLLOWER);
+        m_wristMotor = new TalonSRX(WristConstants.WRIST_MOTOR);
+        m_wristMotorFollower.follow(m_wristMotor);
+
+        m_cancoder = new CANCoder(WristConstants.WRIST_MOTOR_CANCODER);
         tab = Shuffleboard.getTab("Wrist");
         kP = tab.add("kP", WristConstants.WRIST_MOTOR_KP).getEntry();
         kI = tab.add("kI", WristConstants.WRIST_MOTOR_KI).getEntry();
@@ -42,6 +45,7 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configFactoryDefault();
         m_wristMotor.setNeutralMode(NeutralMode.Brake);
         m_wristMotor.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+        m_wristMotor.configFeedbackNotContinuous(true, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configRemoteFeedbackFilter(m_cancoder, 0);
         m_wristMotor.configNeutralDeadband(0.10, WristConstants.TALON_TIMEOUT_MS);
         // Configure Talon  SRX output and sensor direction
@@ -61,21 +65,12 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configMotionCruiseVelocity(WristConstants.WRIST_MOTOR_CRUISE, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configMotionAcceleration(WristConstants.WRIST_MOTOR_ACCELERATION, WristConstants.TALON_TIMEOUT_MS);
         // Set wrist motion limits
-        m_wristMotor.configForwardSoftLimitEnable(true);
         m_wristMotor.configForwardSoftLimitThreshold(WristConstants.WRIST_MOTOR_MAX);
-        m_wristMotor.configReverseSoftLimitEnable(true);
+        m_wristMotor.configForwardSoftLimitEnable(true);
         m_wristMotor.configReverseSoftLimitThreshold(WristConstants.WRIST_MOTOR_MIN);
+        m_wristMotor.configReverseSoftLimitEnable(true);
 
-        m_wristMotorFollower.configFactoryDefault();
-        m_wristMotor.setNeutralMode(NeutralMode.Brake);
-        m_wristMotorFollower.follow(m_wristMotor);
-        // Configure Talon  SRX output and sensor direction
-        m_wristMotorFollower.setSensorPhase(false);
-        // Set peak current
-        m_wristMotorFollower.configPeakCurrentLimit(15, WristConstants.TALON_TIMEOUT_MS);
-        m_wristMotorFollower.configPeakCurrentDuration(200, WristConstants.TALON_TIMEOUT_MS);
-        m_wristMotorFollower.configContinuousCurrentLimit(10, WristConstants.TALON_TIMEOUT_MS);
-        m_wristMotorFollower.enableCurrentLimit(true);
+        m_wristMotorFollower.setNeutralMode(NeutralMode.Brake);
     }
 
     @Override
@@ -87,7 +82,7 @@ public class WristSubsystem extends SubsystemBase {
     public void setWrist( double minus_one_to_one )
     {
         m_wristMotor.set(ControlMode.PercentOutput, minus_one_to_one);
-        nt_wrist_set.setDouble( 0 );
+        nt_wrist_set.setDouble( minus_one_to_one );
     }
     
     public void setWristPosition(double value){

@@ -129,9 +129,14 @@ public final class Constants {
         public static final int WRIST_POSITION_HIGH = -700;   
         public static final int WRIST_POSITION_MID = -600;   
         public static final int WRIST_POSITION_LOW = 0;
-        public static final int WRIST_MOTOR_MIN = 1650;
-        public static final int WRIST_MOTOR_MAX = 2650;
+        public static final int WRIST_MOTOR_MIN = 2149;  // 189 * 4095 / 360 = 2149 counts
+        public static final int WRIST_MOTOR_MAX = 3810;  // 335 * 4095 / 360 = 3810 counts
+
         public static final int TALON_TIMEOUT_MS = 5000;
+    }
+    
+    public static final class IntakeConstants {
+        public static final int INTAKE_MOTOR = 58;
     }
 
     public static final class ExtendConstants {
@@ -143,12 +148,12 @@ public final class Constants {
         public static final double EXTEND_MOTOR_KD = 0; //0.0135;
         public static final double EXTEND_MOTOR_CRUISE = 800;
         public static final double EXTEND_MOTOR_ACCELERATION = 100;
-        public static final int EXTEND_POSITION_SHELF = -1000;   
-        public static final int EXTEND_POSITION_HIGH = -700;   
-        public static final int EXTEND_POSITION_MID = -600;   
-        public static final int EXTEND_POSITION_LOW = 0;
-        public static final int EXTEND_MOTOR_MIN = 1650;
-        public static final int EXTEND_MOTOR_MAX = 2650;
+        public static final int EXTEND_POSITION_SHELF = 27000;   
+        public static final int EXTEND_POSITION_HIGH = 27000;   
+        public static final int EXTEND_POSITION_MID = 22000;   
+        public static final int EXTEND_POSITION_LOW = 8000;
+        public static final int EXTEND_MOTOR_MIN = 500;
+        public static final int EXTEND_MOTOR_MAX = 27000;
         public static final int TALON_TIMEOUT_MS = 5000;
     }
 

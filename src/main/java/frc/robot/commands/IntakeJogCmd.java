@@ -5,36 +5,38 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.WristSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
-public class WristJogDownCmd extends CommandBase {
+public class IntakeJogCmd extends CommandBase {
 
-  private WristSubsystem m_wristSubsystem;
+  private IntakeSubsystem m_intakeSubsystem;
+  private double m_speed;
 
-  /** Creates a new WristJogDown. */
-  public WristJogDownCmd( WristSubsystem wristSubsystem ) {
+  /** Creates a new ExtendJogUp. */
+  public IntakeJogCmd( IntakeSubsystem intakeSubsystem, double speed ) {
     // Use addRequirements() here to declare subsystem dependencies.
-    m_wristSubsystem = wristSubsystem;
-    addRequirements(wristSubsystem);
+    m_intakeSubsystem = intakeSubsystem;
+    addRequirements((intakeSubsystem));
+    m_speed = speed;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("wrist down");
+    System.out.println("intake jog cmd" + m_speed);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_wristSubsystem.setWrist(-1.0);
+    m_intakeSubsystem.setIntake( m_speed );
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted)
   {
-     m_wristSubsystem.setWrist(0);
+    m_intakeSubsystem.setIntake(0);
   }
 
   // Returns true when the command should end.

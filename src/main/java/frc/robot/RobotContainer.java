@@ -38,6 +38,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
 import frc.robot.subsystems.ExtendSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
 
 import frc.robot.GamepadAxisButton;
@@ -48,6 +49,7 @@ import frc.robot.commands.WristJogDownCmd;
 import frc.robot.commands.WristJogUpCmd;
 import frc.robot.commands.ExtendJogInCmd;
 import frc.robot.commands.ExtendJogOutCmd;
+import frc.robot.commands.IntakeJogCmd;
 
 
 public class RobotContainer 
@@ -56,8 +58,8 @@ public class RobotContainer
     private final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final ExtendSubsystem extendSubsystem = new ExtendSubsystem();
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
-    
 
     private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
     private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
@@ -74,6 +76,8 @@ public class RobotContainer
     GamepadAxisButton m_operatorLeftYAxisDown;
     GamepadAxisButton m_operatorDpadUp;
     GamepadAxisButton m_operatorDpadDown;
+    GamepadAxisButton m_driverLT, m_driverRT;
+
 
 
     public RobotContainer() 
@@ -127,6 +131,11 @@ public class RobotContainer
         m_operatorLeftYAxisUp.whileTrue( new ExtendJogOutCmd( extendSubsystem ) );
         m_operatorLeftYAxisDown = new GamepadAxisButton(this::operatorLeftYAxisDown);
         m_operatorLeftYAxisDown.whileTrue( new ExtendJogInCmd( extendSubsystem ) );
+
+        m_driverLT = new GamepadAxisButton(this::DriverLTtrigger);
+        m_driverLT.whileTrue( new IntakeJogCmd( intakeSubsystem, -0.7 ) );
+        m_driverRT = new GamepadAxisButton(this::DriverRTtrigger);
+        m_driverRT.whileTrue( new IntakeJogCmd( intakeSubsystem, 0.7 ) );
     }
 
     public boolean operatorRightYAxisUp()
@@ -137,6 +146,16 @@ public class RobotContainer
     public boolean operatorRightYAxisDown()
     {
         return ( operatorJoystick.getRawAxis(5) > 0.5 );
+    }
+
+    public boolean DriverLTtrigger()
+    {
+        return ( driverJoystick.getRawAxis(2) > 0.5 );
+    }
+
+    public boolean DriverRTtrigger()
+    {
+        return ( driverJoystick.getRawAxis(3) > 0.5 );
     }
 
     
