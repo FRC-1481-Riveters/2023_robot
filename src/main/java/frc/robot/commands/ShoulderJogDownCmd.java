@@ -5,16 +5,17 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.ShoulderSubsystem;
 
 public class ShoulderJogDownCmd extends CommandBase {
 
-  private ArmSubsystem m_armSubsystem;
+  private ShoulderSubsystem m_shoulderSubsystem;
 
   /** Creates a new ShoulderJogDown. */
-  public ShoulderJogDownCmd( ArmSubsystem armSubsystem ) {
+  public ShoulderJogDownCmd( ShoulderSubsystem shoulderSubsystem ) {
     // Use addRequirements() here to declare subsystem dependencies.
-    m_armSubsystem = armSubsystem;
+    m_shoulderSubsystem = shoulderSubsystem;
+    addRequirements(shoulderSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -24,14 +25,14 @@ public class ShoulderJogDownCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_armSubsystem.setShoulder(0.3);
+    m_shoulderSubsystem.setShoulder(0.3);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted)
   {
-     m_armSubsystem.setShoulder(0);
+     m_shoulderSubsystem.setShoulder(0);
   }
 
   // Returns true when the command should end.

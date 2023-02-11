@@ -33,9 +33,9 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
-import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ShoulderConstants;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.ShoulderSubsystem;
 
 import frc.robot.GamepadAxisButton;
 import frc.robot.commands.SwerveJoystickCmd;
@@ -46,7 +46,7 @@ import frc.robot.commands.ShoulderJogDownCmd;
 public class RobotContainer 
 {
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
-    private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    private final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
 
     private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
     private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
@@ -93,14 +93,14 @@ public class RobotContainer
     private void configureButtonBindings() 
     {
         new JoystickButton(driverJoystick, 2).whenPressed(() -> swerveSubsystem.zeroHeading());
-        new JoystickButton(operatorJoystick, 4).whenPressed(() -> armSubsystem.setShoulderPosition(ArmConstants.ARM_SHOULDER_POSITION_HIGH));
-        new JoystickButton(operatorJoystick, 2).whenPressed(() -> armSubsystem.setShoulderPosition(ArmConstants.ARM_SHOULDER_POSITION_MID));
-        new JoystickButton(operatorJoystick, 1).whenPressed(() -> armSubsystem.setShoulderPosition(ArmConstants.ARM_SHOULDER_POSITION_LOW));
+        new JoystickButton(operatorJoystick, 4).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_HIGH));
+        new JoystickButton(operatorJoystick, 2).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_MID));
+        new JoystickButton(operatorJoystick, 1).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_LOW));
 
         m_operatorRightYAxisUp = new GamepadAxisButton(this::operatorRightYAxisUp);
-        m_operatorRightYAxisUp.whileTrue( new ShoulderJogUpCmd( armSubsystem ) );
+        m_operatorRightYAxisUp.whileTrue( new ShoulderJogUpCmd( shoulderSubsystem ) );
         m_operatorRightYAxisDown = new GamepadAxisButton(this::operatorRightYAxisDown);
-        m_operatorRightYAxisDown.whileTrue( new ShoulderJogDownCmd( armSubsystem ) );
+        m_operatorRightYAxisDown.whileTrue( new ShoulderJogDownCmd( shoulderSubsystem ) );
     }
 
     public boolean operatorRightYAxisUp()
