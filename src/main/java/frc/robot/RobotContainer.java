@@ -35,18 +35,29 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShoulderConstants;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.WristSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
+import frc.robot.subsystems.ExtendSubsystem;
+
 
 import frc.robot.GamepadAxisButton;
 import frc.robot.commands.SwerveJoystickCmd;
 import frc.robot.commands.ShoulderJogUpCmd;
 import frc.robot.commands.ShoulderJogDownCmd;
+import frc.robot.commands.WristJogDownCmd;
+import frc.robot.commands.WristJogUpCmd;
+import frc.robot.commands.ExtendJogInCmd;
+import frc.robot.commands.ExtendJogOutCmd;
 
 
 public class RobotContainer 
 {
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
     private final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
+    private final WristSubsystem wristSubsystem = new WristSubsystem();
+    private final ExtendSubsystem extendSubsystem = new ExtendSubsystem();
+
+    
 
     private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
     private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
@@ -59,6 +70,10 @@ public class RobotContainer
 
     GamepadAxisButton m_operatorRightYAxisUp;
     GamepadAxisButton m_operatorRightYAxisDown;
+    GamepadAxisButton m_operatorLeftYAxisUp;
+    GamepadAxisButton m_operatorLeftYAxisDown;
+    GamepadAxisButton m_operatorDpadUp;
+    GamepadAxisButton m_operatorDpadDown;
 
 
     public RobotContainer() 
@@ -93,6 +108,7 @@ public class RobotContainer
     private void configureButtonBindings() 
     {
         new JoystickButton(driverJoystick, 2).whenPressed(() -> swerveSubsystem.zeroHeading());
+        
         new JoystickButton(operatorJoystick, 4).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_HIGH));
         new JoystickButton(operatorJoystick, 2).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_MID));
         new JoystickButton(operatorJoystick, 1).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_LOW));
@@ -101,6 +117,16 @@ public class RobotContainer
         m_operatorRightYAxisUp.whileTrue( new ShoulderJogUpCmd( shoulderSubsystem ) );
         m_operatorRightYAxisDown = new GamepadAxisButton(this::operatorRightYAxisDown);
         m_operatorRightYAxisDown.whileTrue( new ShoulderJogDownCmd( shoulderSubsystem ) );
+
+        m_operatorDpadUp = new GamepadAxisButton(this::operatorDpadUp);
+        m_operatorDpadUp.whileTrue( new WristJogUpCmd( wristSubsystem ) );
+        m_operatorDpadDown = new GamepadAxisButton(this::operatorDpadDown);
+        m_operatorDpadDown.whileTrue( new WristJogDownCmd( wristSubsystem ) );
+
+        m_operatorLeftYAxisUp = new GamepadAxisButton(this::operatorLeftYAxisUp);
+        m_operatorLeftYAxisUp.whileTrue( new ExtendJogOutCmd( extendSubsystem ) );
+        m_operatorLeftYAxisDown = new GamepadAxisButton(this::operatorLeftYAxisDown);
+        m_operatorLeftYAxisDown.whileTrue( new ExtendJogInCmd( extendSubsystem ) );
     }
 
     public boolean operatorRightYAxisUp()
@@ -111,6 +137,27 @@ public class RobotContainer
     public boolean operatorRightYAxisDown()
     {
         return ( operatorJoystick.getRawAxis(5) > 0.5 );
+    }
+
+    
+    public boolean operatorLeftYAxisUp()
+    {
+        return ( operatorJoystick.getRawAxis(1) < -0.5 );
+    }
+
+    public boolean operatorLeftYAxisDown()
+    {
+        return ( operatorJoystick.getRawAxis(1) > 0.5 );
+    }
+
+    public boolean operatorDpadUp()
+    {
+        return ( operatorJoystick.getPOV() == 0 );
+    }
+
+    public boolean operatorDpadDown()
+    {
+        return ( operatorJoystick.getPOV() == 180 );
     }
 
     public Command getAutonomousCommand() {

@@ -115,6 +115,44 @@ public final class Constants {
         public static final int TALON_TIMEOUT_MS = 5000;
     }
 
+    public static final class WristConstants {
+        public static final int WRIST_MOTOR = 51;
+        public static final int WRIST_MOTOR_CANCODER = 52;
+        public static final int WRIST_MOTOR_FOLLOWER = 50;
+        public static final double WRIST_MOTOR_KF = 0.00;
+        public static final double WRIST_MOTOR_KP = 5.4;
+        public static final double WRIST_MOTOR_KI = 0; //0.0150;
+        public static final double WRIST_MOTOR_KD = 0; //0.0135;
+        public static final double WRIST_MOTOR_CRUISE = 800;
+        public static final double WRIST_MOTOR_ACCELERATION = 100;
+        public static final int WRIST_POSITION_SHELF = -1000;   
+        public static final int WRIST_POSITION_HIGH = -700;   
+        public static final int WRIST_POSITION_MID = -600;   
+        public static final int WRIST_POSITION_LOW = 0;
+        public static final int WRIST_MOTOR_MIN = 1650;
+        public static final int WRIST_MOTOR_MAX = 2650;
+        public static final int TALON_TIMEOUT_MS = 5000;
+    }
+
+    public static final class ExtendConstants {
+        public static final int EXTEND_MOTOR = 55;
+        public static final int EXTEND_MOTOR_CANCODER = 56;
+        public static final double EXTEND_MOTOR_KF = 0.00;
+        public static final double EXTEND_MOTOR_KP = 5.4;
+        public static final double EXTEND_MOTOR_KI = 0; //0.0150;
+        public static final double EXTEND_MOTOR_KD = 0; //0.0135;
+        public static final double EXTEND_MOTOR_CRUISE = 800;
+        public static final double EXTEND_MOTOR_ACCELERATION = 100;
+        public static final int EXTEND_POSITION_SHELF = -1000;   
+        public static final int EXTEND_POSITION_HIGH = -700;   
+        public static final int EXTEND_POSITION_MID = -600;   
+        public static final int EXTEND_POSITION_LOW = 0;
+        public static final int EXTEND_MOTOR_MIN = 1650;
+        public static final int EXTEND_MOTOR_MAX = 2650;
+        public static final int TALON_TIMEOUT_MS = 5000;
+    }
+
+
     public static final class OIConstants {
         public static final int kDriverControllerPort = 0;
         public static final int kOperatorControllerPort = 1;
