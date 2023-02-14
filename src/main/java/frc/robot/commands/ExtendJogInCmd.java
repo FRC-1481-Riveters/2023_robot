@@ -27,7 +27,7 @@ public class ExtendJogInCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_extendSubsystem.setExtend( -1.0 );
+    m_extendSubsystem.setExtend( -0.5 );
   }
 
   // Called once the command ends or is interrupted.

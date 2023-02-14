@@ -28,12 +28,14 @@ import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ShoulderConstants;
+import frc.robot.Constants.*;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
@@ -45,10 +47,13 @@ import frc.robot.GamepadAxisButton;
 import frc.robot.commands.SwerveJoystickCmd;
 import frc.robot.commands.ShoulderJogUpCmd;
 import frc.robot.commands.ShoulderJogDownCmd;
+import frc.robot.commands.ShoulderPositionCmd;
 import frc.robot.commands.WristJogDownCmd;
 import frc.robot.commands.WristJogUpCmd;
+import frc.robot.commands.WristPositionCmd;
 import frc.robot.commands.ExtendJogInCmd;
 import frc.robot.commands.ExtendJogOutCmd;
+import frc.robot.commands.ExtendPositionCmd;
 import frc.robot.commands.IntakeJogCmd;
 
 
@@ -111,11 +116,16 @@ public class RobotContainer
     
     private void configureButtonBindings() 
     {
-        new JoystickButton(driverJoystick, 2).whenPressed(() -> swerveSubsystem.zeroHeading());
+        new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed(() -> swerveSubsystem.zeroHeading());
         
-        new JoystickButton(operatorJoystick, 4).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_HIGH));
-        new JoystickButton(operatorJoystick, 2).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_MID));
-        new JoystickButton(operatorJoystick, 1).whenPressed(() -> shoulderSubsystem.setShoulderPosition(ShoulderConstants.SHOULDER_POSITION_LOW));
+        new JoystickButton(operatorJoystick, XboxController.Button.kY.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH, false));
+        new JoystickButton(operatorJoystick, XboxController.Button.kB.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_MID, false));
+        new JoystickButton(operatorJoystick, XboxController.Button.kA.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, false));
+
+        new JoystickButton(operatorJoystick, XboxController.Button.kBack.value).whenPressed(StowCmd());
+
+        new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
+
 
         m_operatorRightYAxisUp = new GamepadAxisButton(this::operatorRightYAxisUp);
         m_operatorRightYAxisUp.whileTrue( new ShoulderJogUpCmd( shoulderSubsystem ) );
@@ -140,33 +150,33 @@ public class RobotContainer
 
     public boolean operatorRightYAxisUp()
     {
-        return ( operatorJoystick.getRawAxis(5) < -0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) < -0.5 );
     }
 
     public boolean operatorRightYAxisDown()
     {
-        return ( operatorJoystick.getRawAxis(5) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) > 0.5 );
     }
 
     public boolean DriverLTtrigger()
     {
-        return ( driverJoystick.getRawAxis(2) > 0.5 );
+        return ( driverJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.5 );
     }
 
     public boolean DriverRTtrigger()
     {
-        return ( driverJoystick.getRawAxis(3) > 0.5 );
+        return ( driverJoystick.getRawAxis( XboxController.Axis.kRightTrigger.value ) > 0.5 );
     }
 
     
     public boolean operatorLeftYAxisUp()
     {
-        return ( operatorJoystick.getRawAxis(1) < -0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) < -0.5 );
     }
 
     public boolean operatorLeftYAxisDown()
     {
-        return ( operatorJoystick.getRawAxis(1) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) > 0.5 );
     }
 
     public boolean operatorDpadUp()
@@ -209,5 +219,43 @@ public class RobotContainer
                 new InstantCommand(() -> swerveSubsystem.resetOdometry(circleTrajectory.getInitialPose())),
                 swerveControllerCommand,
                 new InstantCommand(() -> swerveSubsystem.stopModules()));
+    }
+
+
+    /*
+     * at bumper pivot:
+        shoulder 2411
+
+        fully extended: 23263
+
+        wrist full up -3700
+        full down -2130
+
+        stowed -2553
+        shoulder 2579
+     */
+    public Command StowCmd(){
+        if (shoulderSubsystem.getPosition() < ShoulderConstants.SHOULDER_POSITION_LEVEL){
+            return new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX)//,
+                    //new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED)
+                ),
+                new ParallelCommandGroup(
+                    new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
+                    new ExtendPositionCmd (extendSubsystem, 0)
+                ),
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true)
+            );
+        }else{
+            return new SequentialCommandGroup(
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
+                new ParallelCommandGroup(
+                    new ExtendPositionCmd (extendSubsystem, 0),
+                    new WristPositionCmd(wristSubsystem, -2553)
+                ),
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true)
+            );
+        }
     }
 }

@@ -96,10 +96,18 @@ public class ShoulderSubsystem extends SubsystemBase {
         nt_shoulder_set.setDouble( 0 );
     }
     
-    public void setShoulderPosition(double value){
+    public void setPosition(double value){
         shoulderPosition = value;
         m_shoulderMotor.set(ControlMode.MotionMagic, value);
         nt_shoulder_set.setDouble( shoulderPosition );
     }
+    
+    public boolean atPosition()
+    {
+        return ( Math.abs( nt_shoulder_pos.getDouble(0) - shoulderPosition ) < ShoulderConstants.SHOULDER_TOLERANCE );
+    }
 
+    public double getPosition(){
+        return (nt_shoulder_pos.getDouble(0));
+    }
 }

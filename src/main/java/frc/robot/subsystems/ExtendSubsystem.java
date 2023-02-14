@@ -61,7 +61,7 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.configForwardSoftLimitThreshold(ExtendConstants.EXTEND_MOTOR_MAX);
         m_extendMotor.configForwardSoftLimitEnable(true);
         m_extendMotor.configReverseSoftLimitThreshold(ExtendConstants.EXTEND_MOTOR_MIN);
-        m_extendMotor.configReverseSoftLimitEnable(true);
+        //m_extendMotor.configReverseSoftLimitEnable(true);
 
     }
 
@@ -77,10 +77,18 @@ public class ExtendSubsystem extends SubsystemBase {
         nt_extend_set.setDouble( 0 );
     }
     
-    public void setExtendPosition(double value){
+    public void setPosition(double value){
         extendPosition = value;
         m_extendMotor.set(ControlMode.MotionMagic, value);
         nt_extend_set.setDouble( extendPosition );
     }
 
+    public boolean atPosition()
+    {
+        return ( Math.abs( nt_extend_pos.getDouble(0) - extendPosition ) < ExtendConstants.EXTEND_TOLERANCE );
+    }
+
+    public void zeroPosition(){
+        m_extendMotor.setSelectedSensorPosition(0);
+    }
 }

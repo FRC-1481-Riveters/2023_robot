@@ -27,7 +27,7 @@ public class WristJogUpCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_wristSubsystem.setWrist( 1.0 );
+    m_wristSubsystem.setWrist( -1.0 );
   }
 
   // Called once the command ends or is interrupted.
