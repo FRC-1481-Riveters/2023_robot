@@ -60,9 +60,9 @@ import frc.robot.commands.IntakeJogCmd;
 public class RobotContainer 
 {
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
-    private final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
-    private final WristSubsystem wristSubsystem = new WristSubsystem();
-    private final ExtendSubsystem extendSubsystem = new ExtendSubsystem();
+    public final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
+    public final WristSubsystem wristSubsystem = new WristSubsystem();
+    public final ExtendSubsystem extendSubsystem = new ExtendSubsystem();
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
 
@@ -81,6 +81,8 @@ public class RobotContainer
     GamepadAxisButton m_operatorLeftYAxisDown;
     GamepadAxisButton m_operatorDpadUp;
     GamepadAxisButton m_operatorDpadDown;
+    GamepadAxisButton m_operatorDpadLeft;
+    GamepadAxisButton m_operatorDpadRight;
     GamepadAxisButton m_driverLT, m_driverRT;
 
 
@@ -118,9 +120,11 @@ public class RobotContainer
     {
         new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed(() -> swerveSubsystem.zeroHeading());
         
-        new JoystickButton(operatorJoystick, XboxController.Button.kY.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH, false));
-        new JoystickButton(operatorJoystick, XboxController.Button.kB.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_MID, false));
-        new JoystickButton(operatorJoystick, XboxController.Button.kA.value).whenPressed(new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, false));
+        new JoystickButton(operatorJoystick, XboxController.Button.kY.value).whenPressed(ScoreHighCmd());
+        new JoystickButton(operatorJoystick, XboxController.Button.kB.value).whenPressed(ScoreMidCmd());
+        new JoystickButton(operatorJoystick, XboxController.Button.kA.value).whenPressed(ScoreLowCmd());
+
+        new JoystickButton(operatorJoystick, XboxController.Button.kLeftBumper.value).whenPressed(ShelfLoadCmd());
 
         new JoystickButton(operatorJoystick, XboxController.Button.kBack.value).whenPressed(StowCmd());
 
@@ -136,6 +140,13 @@ public class RobotContainer
         m_operatorDpadUp.whileTrue( new WristJogUpCmd( wristSubsystem ) );
         m_operatorDpadDown = new GamepadAxisButton(this::operatorDpadDown);
         m_operatorDpadDown.whileTrue( new WristJogDownCmd( wristSubsystem ) );
+
+        m_operatorDpadLeft = new GamepadAxisButton(this::operatorDpadLeft);
+//        m_operatorDpadLeft.whileTrue( new WristPositionCmd( wristSubsystem, WristConstants.WRIST_POSITION_SHELF, false) );
+        m_operatorDpadLeft.whileTrue( new ShoulderPositionCmd( shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH, false) );
+        m_operatorDpadRight = new GamepadAxisButton(this::operatorDpadRight);
+//        m_operatorDpadRight.whileTrue( new WristPositionCmd( wristSubsystem, WristConstants.WRIST_POSITION_STOWED, false) );
+        m_operatorDpadRight.whileTrue( new ShoulderPositionCmd( shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, false) );
 
         m_operatorLeftYAxisUp = new GamepadAxisButton(this::operatorLeftYAxisUp);
         m_operatorLeftYAxisUp.whileTrue( new ExtendJogOutCmd( extendSubsystem ) );
@@ -189,6 +200,17 @@ public class RobotContainer
         return ( operatorJoystick.getPOV() == 180 );
     }
 
+    public boolean operatorDpadLeft()
+    {
+        return ( operatorJoystick.getPOV() == 90 );
+    }
+
+    public boolean operatorDpadRight()
+    {
+        return ( operatorJoystick.getPOV() == 270 );
+    }
+
+
     public Command getAutonomousCommand() {
         // 1. Create trajectory settings
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
@@ -222,28 +244,16 @@ public class RobotContainer
     }
 
 
-    /*
-     * at bumper pivot:
-        shoulder 2411
-
-        fully extended: 23263
-
-        wrist full up -3700
-        full down -2130
-
-        stowed -2553
-        shoulder 2579
-     */
     public Command StowCmd(){
         if (shoulderSubsystem.getPosition() < ShoulderConstants.SHOULDER_POSITION_LEVEL){
             return new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX)//,
-                    //new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED)
+                    new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX, true),
+                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
                 ),
                 new ParallelCommandGroup(
                     new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
-                    new ExtendPositionCmd (extendSubsystem, 0)
+                    new ExtendPositionCmd (extendSubsystem, 0, true)
                 ),
                 new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true)
             );
@@ -251,11 +261,55 @@ public class RobotContainer
             return new SequentialCommandGroup(
                 new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
                 new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, 0),
-                    new WristPositionCmd(wristSubsystem, -2553)
+                    new ExtendPositionCmd (extendSubsystem, 0, true),
+                    new WristPositionCmd(wristSubsystem, -2553, true)
                 ),
                 new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true)
             );
         }
+    }
+
+    public Command ScoreHighCmd(){
+            return new SequentialCommandGroup(
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LEVEL, true),
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_HIGH, true),
+                new ParallelCommandGroup(
+                    new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH, false),
+                    new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_HIGH, true)
+                )
+            );
+    }
+
+    public Command ScoreMidCmd(){
+        return new SequentialCommandGroup(
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LEVEL, true),
+            new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID, true),
+            new ParallelCommandGroup(
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_MID, false),
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_MID, true)
+            )
+        );
+    }
+
+    public Command ScoreLowCmd(){
+        return new SequentialCommandGroup(
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LEVEL, true),
+            new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_LOW, true),
+            new ParallelCommandGroup(
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, false),
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_LOW, true)
+            )
+        );
+    }
+
+    public Command ShelfLoadCmd(){
+        return new SequentialCommandGroup(
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LEVEL, true),
+            new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF, true),
+            new ParallelCommandGroup(
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF, false),
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
+            )
+        );
     }
 }

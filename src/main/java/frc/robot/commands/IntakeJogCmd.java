@@ -36,7 +36,7 @@ public class IntakeJogCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-    m_intakeSubsystem.setIntake(0);
+    m_intakeSubsystem.setIntake(0.07);
   }
 
   // Returns true when the command should end.

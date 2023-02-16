@@ -7,11 +7,13 @@ public class WristPositionCmd extends CommandBase {
 
     private WristSubsystem m_wristSubsystem;
     private double m_setPosition;
+    private boolean m_waitAtPosition;
 
-    public WristPositionCmd( WristSubsystem subsystem, double position )
+    public WristPositionCmd( WristSubsystem subsystem, double position, boolean waitAtPosition )
     {
         m_wristSubsystem = subsystem;
         m_setPosition = position;
+        m_waitAtPosition = waitAtPosition;
     }
     
   // Called when the command is initially scheduled.
@@ -23,7 +25,7 @@ public class WristPositionCmd extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-      if( m_wristSubsystem.atPosition() )
+      if( m_wristSubsystem.atPosition() || m_waitAtPosition == false)
       {
         return true;
       }

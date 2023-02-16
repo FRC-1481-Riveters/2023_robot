@@ -5,6 +5,7 @@ import frc.robot.Constants.ExtendConstants;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
@@ -23,6 +24,7 @@ public class ExtendSubsystem extends SubsystemBase {
     private GenericEntry kI, kD, kCruise, kAcceleration;
     private GenericEntry nt_extend_pos, nt_extend_set;
     private double extendPosition;
+    private double shoulderCosine;
 
     public ExtendSubsystem() 
     {
@@ -69,8 +71,14 @@ public class ExtendSubsystem extends SubsystemBase {
     public void periodic() 
     {
         nt_extend_pos.setDouble( m_extendMotor.getSelectedSensorPosition() );
+        if (m_extendMotor.getControlMode() == ControlMode.MotionMagic )
+        m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
     }
 
+    public void setShoulder (double cosine)
+    {
+        shoulderCosine = cosine;
+    }
     public void setExtend( double minus_one_to_one )
     {
         m_extendMotor.set(ControlMode.PercentOutput, minus_one_to_one);
@@ -89,6 +97,8 @@ public class ExtendSubsystem extends SubsystemBase {
     }
 
     public void zeroPosition(){
+        System.out.println("extend zero");
+        m_cancoder.setPosition(0);
         m_extendMotor.setSelectedSensorPosition(0);
     }
 }

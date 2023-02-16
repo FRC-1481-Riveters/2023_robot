@@ -101,17 +101,18 @@ public final class Constants {
         public static final int SHOULDER_MOTOR = 41;
         public static final int SHOULDER_MOTOR_FOLLOWER = 40;
         public static final double SHOULDER_MOTOR_KF = 0.00;
-        public static final double SHOULDER_MOTOR_KP = 5.4;
+        public static final double SHOULDER_MOTOR_KP = 2.4;
         public static final double SHOULDER_MOTOR_KI = 0; //0.0150;
         public static final double SHOULDER_MOTOR_KD = 0; //0.0135;
         public static final double SHOULDER_MOTOR_CRUISE = 800;
-        public static final double SHOULDER_MOTOR_ACCELERATION = 100;
-        public static final int SHOULDER_POSITION_SHELF = -1000;   
-        public static final int SHOULDER_POSITION_HIGH = -700;   
-        public static final int SHOULDER_POSITION_MID = -600;   
-        public static final int SHOULDER_POSITION_LOW = 0;
+        public static final double SHOULDER_MOTOR_ACCELERATION = 320;
+        public static final int SHOULDER_POSITION_SHELF = 1754;   
+        public static final int SHOULDER_POSITION_HIGH = 1655;   
+        public static final int SHOULDER_POSITION_MID = 1710;   
+        public static final int SHOULDER_POSITION_LOW = 2242;
         public static final int SHOULDER_POSITION_LEVEL = 1911;
-        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2200;
+        public static final int SHOULDER_POSITION_DOWN = 2935;
+        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2100;
         public static final int SHOULDER_POSITION_STOWED = 2579;
         public static final int SHOULDER_MOTOR_MIN = 1650;
         public static final int SHOULDER_MOTOR_MAX = 2650;
@@ -124,42 +125,44 @@ public final class Constants {
         public static final int WRIST_MOTOR_CANCODER = 52;
         public static final int WRIST_MOTOR_FOLLOWER = 50;
         public static final double WRIST_MOTOR_KF = 0.00;
-        public static final double WRIST_MOTOR_KP = 1.4;
+        public static final double WRIST_MOTOR_KP = 2.4;
         public static final double WRIST_MOTOR_KI = 0.00150;
         public static final double WRIST_MOTOR_KD = 0.00135;
-        public static final double WRIST_MOTOR_CRUISE = 800;
-        public static final double WRIST_MOTOR_ACCELERATION = 100;
-        public static final int WRIST_POSITION_SHELF = -1000;   
-        public static final int WRIST_POSITION_HIGH = -700;   
-        public static final int WRIST_POSITION_MID = -600;   
-        public static final int WRIST_POSITION_LOW = 0;
-        public static final int WRIST_POSITION_STRAIGHT = 3071;
-        public static final int WRIST_POSITION_STOWED = 2616;
-        public static final int WRIST_POSITION_UP = 3833;
-        public static final int WRIST_MOTOR_MIN = 2149;  // 189 * 4095 / 360 = 2149 counts
-        public static final int WRIST_MOTOR_MAX = 3810;  // 335 * 4095 / 360 = 3810 counts
+        public static final double WRIST_MOTOR_CRUISE = 1000;
+        public static final double WRIST_MOTOR_ACCELERATION = 400;
+        public static final int WRIST_POSITION_MIN = 205;
+        public static final int WRIST_POSITION_MAX = 1967;
         public static final int WRIST_TOLERANCE = 60;
+        public static final int WRIST_POSITION_SHELF = 662;  
+        public static final int WRIST_POSITION_HIGH = 812;    
+        public static final int WRIST_POSITION_MID = 834;    
+        public static final int WRIST_POSITION_LOW = 834; 
+        public static final int WRIST_POSITION_STRAIGHT = 952;
+        public static final int WRIST_POSITION_STOWED = 1600;
+        public static final int WRIST_POSITION_CUBE = 1800;
+        public static final int WRIST_POSITION_CONE = 1900;
 
         public static final int TALON_TIMEOUT_MS = 5000;
     }
     
     public static final class IntakeConstants {
         public static final int INTAKE_MOTOR = 58;
+        public static final int TALON_TIMEOUT_MS = 5000;
     }
 
     public static final class ExtendConstants {
         public static final int EXTEND_MOTOR = 55;
         public static final int EXTEND_MOTOR_CANCODER = 56;
         public static final double EXTEND_MOTOR_KF = 0.00;
-        public static final double EXTEND_MOTOR_KP = 1.0;
+        public static final double EXTEND_MOTOR_KP = 1;
         public static final double EXTEND_MOTOR_KI = 0.00150;
         public static final double EXTEND_MOTOR_KD = 0.00135;
-        public static final double EXTEND_MOTOR_CRUISE = 5000;
-        public static final double EXTEND_MOTOR_ACCELERATION = 600;
-        public static final int EXTEND_POSITION_SHELF = 27000;   
-        public static final int EXTEND_POSITION_HIGH = 27000;   
-        public static final int EXTEND_POSITION_MID = 22000;   
-        public static final int EXTEND_POSITION_LOW = 8000;
+        public static final double EXTEND_MOTOR_CRUISE = 6000;
+        public static final double EXTEND_MOTOR_ACCELERATION = 2400;
+        public static final int EXTEND_POSITION_SHELF = 4938;   
+        public static final int EXTEND_POSITION_HIGH = 16397;   
+        public static final int EXTEND_POSITION_MID = 4509;   
+        public static final int EXTEND_POSITION_LOW = 0;
         public static final int EXTEND_MOTOR_MIN = 500;
         public static final int EXTEND_MOTOR_MAX = 23263;
         public static final int EXTEND_TOLERANCE = 540;

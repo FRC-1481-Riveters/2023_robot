@@ -110,4 +110,17 @@ public class ShoulderSubsystem extends SubsystemBase {
     public double getPosition(){
         return (nt_shoulder_pos.getDouble(0));
     }
+
+    public double getCosine(){
+        double cosine;
+        double pos;
+        pos = nt_shoulder_pos.getDouble(0);
+      // if the arm is above level treat it as level (no feed forward needed to hold it in place)
+        if (pos < ShoulderConstants.SHOULDER_POSITION_LEVEL) 
+            pos = ShoulderConstants.SHOULDER_POSITION_LEVEL;
+      //Convert arm Position in encoder counts to radians 
+            cosine = ((pos - ShoulderConstants.SHOULDER_POSITION_LEVEL) / (ShoulderConstants.SHOULDER_POSITION_DOWN - ShoulderConstants.SHOULDER_POSITION_LEVEL)) * Math.PI/2.0;   
+        cosine = Math.cos(cosine);
+    return (cosine);
+    }
 }

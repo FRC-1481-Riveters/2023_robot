@@ -49,7 +49,6 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
         m_wristMotor.configFeedbackNotContinuous(true, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configRemoteFeedbackFilter(m_cancoder, 0);
-        m_wristMotor.configNeutralDeadband(0.10, WristConstants.TALON_TIMEOUT_MS);
         // Configure Talon  SRX output and sensor direction
         m_wristMotor.setSensorPhase(true);
         m_wristMotor.setInverted(InvertType.InvertMotorOutput);
@@ -69,10 +68,10 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configMotionCruiseVelocity(WristConstants.WRIST_MOTOR_CRUISE, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configMotionAcceleration(WristConstants.WRIST_MOTOR_ACCELERATION, WristConstants.TALON_TIMEOUT_MS);
         // Set wrist motion limits
-        m_wristMotor.configForwardSoftLimitThreshold(WristConstants.WRIST_MOTOR_MAX);
-        //m_wristMotor.configForwardSoftLimitEnable(true);
-        m_wristMotor.configReverseSoftLimitThreshold(WristConstants.WRIST_MOTOR_MIN);
-        //m_wristMotor.configReverseSoftLimitEnable(true);
+        m_wristMotor.configForwardSoftLimitThreshold(WristConstants.WRIST_POSITION_MAX);
+        m_wristMotor.configForwardSoftLimitEnable(true);
+        m_wristMotor.configReverseSoftLimitThreshold(WristConstants.WRIST_POSITION_MIN);
+        m_wristMotor.configReverseSoftLimitEnable(true);
 
         m_wristMotorFollower.setNeutralMode(NeutralMode.Brake);
     }

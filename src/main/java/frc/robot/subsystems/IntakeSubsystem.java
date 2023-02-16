@@ -22,15 +22,14 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeMotor = new TalonSRX(IntakeConstants.INTAKE_MOTOR);
           
         m_intakeMotor.configFactoryDefault();
-        m_intakeMotor.setNeutralMode(NeutralMode.Brake);
-        m_intakeMotor.configNeutralDeadband(0.10);
         // Configure Talon  SRX output and sensor direction
         m_intakeMotor.setSensorPhase(false);
         // Set peak current
-        m_intakeMotor.configPeakCurrentLimit(15);
-        m_intakeMotor.configPeakCurrentDuration(200);
-        m_intakeMotor.configContinuousCurrentLimit(10);
+        m_intakeMotor.configPeakCurrentLimit(20, IntakeConstants.TALON_TIMEOUT_MS);
+        m_intakeMotor.configPeakCurrentDuration(500, IntakeConstants.TALON_TIMEOUT_MS);
+        m_intakeMotor.configContinuousCurrentLimit(15, IntakeConstants.TALON_TIMEOUT_MS);
         m_intakeMotor.enableCurrentLimit(true);
+        m_intakeMotor.setNeutralMode(NeutralMode.Brake);
     }
 
     public void setIntake( double minus_one_to_one )

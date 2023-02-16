@@ -7,11 +7,13 @@ public class ExtendPositionCmd extends CommandBase {
 
     private ExtendSubsystem m_extendSubsystem;
     private double m_setPosition;
+    private boolean m_waitAtPosition;
 
-    public ExtendPositionCmd( ExtendSubsystem subsystem, double position )
+    public ExtendPositionCmd( ExtendSubsystem subsystem, double position, boolean waitAtPosition )
     {
         m_extendSubsystem = subsystem;
         m_setPosition = position;
+        m_waitAtPosition = waitAtPosition;
     }
     
   // Called when the command is initially scheduled.
@@ -23,7 +25,7 @@ public class ExtendPositionCmd extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-      if( m_extendSubsystem.atPosition() )
+      if( m_extendSubsystem.atPosition() || m_waitAtPosition == false)
       {
         return true;
       }
