@@ -34,7 +34,8 @@ public class WristJogUpCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-    m_wristSubsystem.setWrist(0);
+    //m_wristSubsystem.setWrist(0);
+    m_wristSubsystem.setPosition( m_wristSubsystem.getPosition() );
   }
 
   // Returns true when the command should end.

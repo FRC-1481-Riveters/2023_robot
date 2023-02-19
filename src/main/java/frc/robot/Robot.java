@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ShoulderSubsystem;
 import frc.robot.subsystems.ExtendSubsystem;
 import frc.robot.subsystems.WristSubsystem;
+import edu.wpi.first.cameraserver.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -36,6 +37,8 @@ public class Robot extends TimedRobot {
         // and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();
+
+        CameraServer.startAutomaticCapture();
     }
 
     /**

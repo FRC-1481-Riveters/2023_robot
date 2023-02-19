@@ -32,7 +32,7 @@ public class ShoulderJogDownCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-     m_shoulderSubsystem.setShoulder(0);
+    m_shoulderSubsystem.setPosition( m_shoulderSubsystem.getPosition() );
   }
 
   // Returns true when the command should end.

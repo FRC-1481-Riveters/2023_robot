@@ -14,11 +14,13 @@ public class WristPositionCmd extends CommandBase {
         m_wristSubsystem = subsystem;
         m_setPosition = position;
         m_waitAtPosition = waitAtPosition;
+        addRequirements(subsystem);
     }
     
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("WristPositionCmd " + m_setPosition);
     m_wristSubsystem.setPosition(m_setPosition);
   }
 
@@ -27,11 +29,17 @@ public class WristPositionCmd extends CommandBase {
   public boolean isFinished() {
       if( m_wristSubsystem.atPosition() || m_waitAtPosition == false)
       {
+        System.out.println("WristPositionCmd " + m_setPosition + " done");
         return true;
       }
       else
       {
         return false;
       }
+  }
+
+  @Override
+  public void end( boolean interrupted ) {
+    m_wristSubsystem.setWrist(0);
   }
 }

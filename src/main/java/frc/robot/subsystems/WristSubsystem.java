@@ -94,6 +94,15 @@ public class WristSubsystem extends SubsystemBase {
         nt_wrist_set.setDouble( wristPosition );
     }
 
+    public double getPosition(){
+        return (nt_wrist_pos.getDouble(0));
+    }
+
+    public double getWristOutput()
+    {
+        return( nt_wrist_set.getDouble( 0 ) );
+    }
+    
     public boolean atPosition()
     {
         return ( Math.abs( nt_wrist_pos.getDouble(0) - wristPosition ) < WristConstants.WRIST_TOLERANCE );

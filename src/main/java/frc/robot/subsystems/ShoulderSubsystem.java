@@ -50,11 +50,15 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotor.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
-        m_shoulderMotor.selectProfileSlot(0, 0);
+        m_shoulderMotor.config_kF(1, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kP(1, ShoulderConstants.SHOULDER_MOTOR_KP_LOW, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kI(1, ShoulderConstants.SHOULDER_MOTOR_KI_LOW, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kD(1, ShoulderConstants.SHOULDER_MOTOR_KD_LOW, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kF(0, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kP(0, kP.getDouble(ShoulderConstants.SHOULDER_MOTOR_KP), ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kI(0, kI.getDouble(ShoulderConstants.SHOULDER_MOTOR_KI), ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kD(0, kD.getDouble(ShoulderConstants.SHOULDER_MOTOR_KD), ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.selectProfileSlot(0, 0);
         // Set acceleration and cruise velocity
         m_shoulderMotor.configMotionCruiseVelocity(ShoulderConstants.SHOULDER_MOTOR_CRUISE, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.configMotionAcceleration(ShoulderConstants.SHOULDER_MOTOR_ACCELERATION, ShoulderConstants.TALON_TIMEOUT_MS);
@@ -71,15 +75,6 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotor.configPeakCurrentDuration(200, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.enableCurrentLimit(true);
-        // Set Motion Magic gains in slot0
-        m_shoulderMotor.selectProfileSlot(0, 0);
-        m_shoulderMotor.config_kF(0, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.config_kP(0, kP.getDouble(ShoulderConstants.SHOULDER_MOTOR_KP), ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.config_kI(0, kI.getDouble(ShoulderConstants.SHOULDER_MOTOR_KI), ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.config_kD(0, kD.getDouble(ShoulderConstants.SHOULDER_MOTOR_KD), ShoulderConstants.TALON_TIMEOUT_MS);
-        // Set acceleration and cruise velocity
-        m_shoulderMotor.configMotionCruiseVelocity(ShoulderConstants.SHOULDER_MOTOR_CRUISE, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.configMotionAcceleration(ShoulderConstants.SHOULDER_MOTOR_ACCELERATION, ShoulderConstants.TALON_TIMEOUT_MS);
         
         m_shoulderMotorFollower.setNeutralMode(NeutralMode.Brake);
         }
@@ -89,11 +84,29 @@ public class ShoulderSubsystem extends SubsystemBase {
     {
         nt_shoulder_pos.setDouble( m_shoulderMotor.getSelectedSensorPosition() );
     }
+    public void selectLowPID( boolean isLow )
+    {
+        if( isLow == false )
+        {
+            System.out.println("shoulder PID slot 0");
+            m_shoulderMotor.selectProfileSlot(0, 0);
+        }
+        else
+        {
+            System.out.println("shoulder PID slot 1");
+            m_shoulderMotor.selectProfileSlot(1, 0);
+        }
+    }
 
     public void setShoulder( double minus_one_to_one )
     {
         m_shoulderMotor.set(ControlMode.PercentOutput, minus_one_to_one);
-        nt_shoulder_set.setDouble( 0 );
+        nt_shoulder_set.setDouble( minus_one_to_one );
+    }
+    
+    public double getShoulderOutput()
+    {
+        return( nt_shoulder_set.getDouble( 0 ) );
     }
     
     public void setPosition(double value){

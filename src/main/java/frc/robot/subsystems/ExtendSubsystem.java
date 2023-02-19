@@ -8,6 +8,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import edu.wpi.first.wpilibj.DigitalInput;
+
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -25,9 +27,13 @@ public class ExtendSubsystem extends SubsystemBase {
     private GenericEntry nt_extend_pos, nt_extend_set;
     private double extendPosition;
     private double shoulderCosine;
+    private boolean limitSwitch_previous = true;
+    private DigitalInput limitSwitch_di;
 
     public ExtendSubsystem() 
     {
+        limitSwitch_di = new DigitalInput(0);
+
         m_extendMotor = new TalonSRX(ExtendConstants.EXTEND_MOTOR);
         m_cancoder = new CANCoder(ExtendConstants.EXTEND_MOTOR_CANCODER);
         tab = Shuffleboard.getTab("Extend");
@@ -73,6 +79,11 @@ public class ExtendSubsystem extends SubsystemBase {
         nt_extend_pos.setDouble( m_extendMotor.getSelectedSensorPosition() );
         if (m_extendMotor.getControlMode() == ControlMode.MotionMagic )
         m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
+        if( (limitSwitch_di.get() == false) && (limitSwitch_previous == true) )
+        {
+            limitSwitch_previous = false;
+            zeroPosition();
+        }
     }
 
     public void setShoulder (double cosine)
@@ -82,13 +93,22 @@ public class ExtendSubsystem extends SubsystemBase {
     public void setExtend( double minus_one_to_one )
     {
         m_extendMotor.set(ControlMode.PercentOutput, minus_one_to_one);
-        nt_extend_set.setDouble( 0 );
+        nt_extend_set.setDouble( minus_one_to_one );
+    }
+    
+    public double getExtendOutput()
+    {
+        return( nt_extend_set.getDouble( 0 ) );
     }
     
     public void setPosition(double value){
         extendPosition = value;
         m_extendMotor.set(ControlMode.MotionMagic, value);
         nt_extend_set.setDouble( extendPosition );
+    }
+
+    public double getPosition(){
+        return (nt_extend_pos.getDouble(0));
     }
 
     public boolean atPosition()

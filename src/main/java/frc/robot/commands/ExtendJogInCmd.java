@@ -34,7 +34,7 @@ public class ExtendJogInCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-    m_extendSubsystem.setExtend(0);
+    m_extendSubsystem.setPosition( m_extendSubsystem.getPosition() );
   }
 
   // Returns true when the command should end.
