@@ -9,39 +9,69 @@ import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeJogCmd extends CommandBase {
 
+  private enum IntakePiece
+  {
+    hasNothing,
+    hasCube,
+    hasCone
+  };
+
   private IntakeSubsystem m_intakeSubsystem;
-  private double m_speed;
+  private boolean m_isCube, m_isLoading, m_isScoring;;
+  private static IntakePiece intakePiece = IntakePiece.hasNothing;
+
 
   /** Creates a new ExtendJogUp. */
-  public IntakeJogCmd( IntakeSubsystem intakeSubsystem, double speed ) {
+  public IntakeJogCmd( IntakeSubsystem intakeSubsystem, boolean bIsCube, boolean bIsLoading ) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_intakeSubsystem = intakeSubsystem;
     addRequirements((intakeSubsystem));
-    m_speed = speed;
+    m_isCube = bIsCube;
+    m_isLoading= bIsLoading;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("intake jog cmd" + m_speed);
-  }
-
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    m_intakeSubsystem.setIntake( m_speed );
+    System.out.println("intake jog cmd");
+    if( m_isLoading == true )
+    {
+      if( (m_isCube == true) && (intakePiece != IntakePiece.hasCone) )
+      {      
+        intakePiece = IntakePiece.hasCube;
+        m_intakeSubsystem.setIntake( -0.5 );
+      }
+      else
+      {
+        intakePiece = IntakePiece.hasCone;
+        m_intakeSubsystem.setIntake( 1.0 );
+      }
+    }
+    else
+    {      
+      if( intakePiece == IntakePiece.hasCone )
+      {
+        m_intakeSubsystem.setIntake( -0.5 );
+      }
+      else
+      {
+        m_intakeSubsystem.setIntake( 0.4 );
+      }
+      intakePiece = IntakePiece.hasNothing;
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted)
   {
-    m_intakeSubsystem.setIntake(0.07);
-  }
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
+    if( intakePiece == IntakePiece.hasCone && m_isLoading == true )
+    {
+      m_intakeSubsystem.setIntake(0.07);
+    }
+    else
+    {
+      m_intakeSubsystem.setIntake(0.0);
+    }
   }
 }

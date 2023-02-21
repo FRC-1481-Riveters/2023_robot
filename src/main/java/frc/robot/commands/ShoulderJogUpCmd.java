@@ -21,12 +21,7 @@ public class ShoulderJogUpCmd extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-  }
-
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    m_shoulderSubsystem.setShoulder( -1.0 );
+    m_shoulderSubsystem.setShoulder( -0.6 );
   }
 
   // Called once the command ends or is interrupted.

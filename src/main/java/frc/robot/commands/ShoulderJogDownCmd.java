@@ -25,7 +25,7 @@ public class ShoulderJogDownCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_shoulderSubsystem.setShoulder(0.3);
+    m_shoulderSubsystem.setShoulder(0.45);
   }
 
   // Called once the command ends or is interrupted.

@@ -103,6 +103,7 @@ public class ExtendSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         extendPosition = value;
+        m_extendMotor.setIntegralAccumulator(0);
         m_extendMotor.set(ControlMode.MotionMagic, value);
         nt_extend_set.setDouble( extendPosition );
     }

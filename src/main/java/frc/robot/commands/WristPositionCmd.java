@@ -40,6 +40,6 @@ public class WristPositionCmd extends CommandBase {
 
   @Override
   public void end( boolean interrupted ) {
-    m_wristSubsystem.setWrist(0);
+    m_wristSubsystem.setPosition(m_setPosition);
   }
 }

@@ -111,6 +111,7 @@ public class ShoulderSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         shoulderPosition = value;
+        m_shoulderMotor.setIntegralAccumulator(0);
         m_shoulderMotor.set(ControlMode.MotionMagic, value);
         nt_shoulder_set.setDouble( shoulderPosition );
     }

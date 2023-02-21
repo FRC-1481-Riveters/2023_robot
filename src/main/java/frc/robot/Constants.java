@@ -101,11 +101,11 @@ public final class Constants {
         public static final int SHOULDER_MOTOR = 41;
         public static final int SHOULDER_MOTOR_FOLLOWER = 40;
         public static final double SHOULDER_MOTOR_KF = 0.00;
-        public static final double SHOULDER_MOTOR_KP = 1.4;
-        public static final double SHOULDER_MOTOR_KI = 0.0001;
-        public static final double SHOULDER_MOTOR_KD = 0.15;
-        public static final double SHOULDER_MOTOR_KP_LOW = 3.0;
-        public static final double SHOULDER_MOTOR_KI_LOW = 0.01;
+        public static final double SHOULDER_MOTOR_KP = 35.0;
+        public static final double SHOULDER_MOTOR_KI = 0.000;
+        public static final double SHOULDER_MOTOR_KD = 0.3;
+        public static final double SHOULDER_MOTOR_KP_LOW = 20.0;
+        public static final double SHOULDER_MOTOR_KI_LOW = 0.00;
         public static final double SHOULDER_MOTOR_KD_LOW = 0.40;
         public static final double SHOULDER_MOTOR_CRUISE = 400;
         public static final double SHOULDER_MOTOR_ACCELERATION = 40;
@@ -113,13 +113,13 @@ public final class Constants {
         public static final int SHOULDER_MOTOR_MAX = 2600;
         public static final int SHOULDER_POSITION_TEST_85 = 2500;
         public static final int SHOULDER_POSITION_TEST_15 = 1800;
-        public static final int SHOULDER_POSITION_SHELF = 1720;   
-        public static final int SHOULDER_POSITION_HIGH = 1569;   
+        public static final int SHOULDER_POSITION_SHELF = 1735;   
+        public static final int SHOULDER_POSITION_HIGH = 1660;   
         public static final int SHOULDER_POSITION_MID = 1710;   
         public static final int SHOULDER_POSITION_LOW = 2347;
         public static final int SHOULDER_POSITION_LEVEL = 1911;
         public static final int SHOULDER_POSITION_DOWN = 2935;
-        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2100;
+        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2000;
         public static final int SHOULDER_POSITION_CONE_PICKUP = 2366;
         public static final int SHOULDER_POSITION_CUBE_PICKUP = 2423;
         public static final int SHOULDER_POSITION_STOWED = 2579;
@@ -132,9 +132,9 @@ public final class Constants {
         public static final int WRIST_MOTOR_CANCODER = 52;
         public static final int WRIST_MOTOR_FOLLOWER = 50;
         public static final double WRIST_MOTOR_KF = 0.00;
-        public static final double WRIST_MOTOR_KP = 1;
-        public static final double WRIST_MOTOR_KI = 0.00150;
-        public static final double WRIST_MOTOR_KD = 0.25;
+        public static final double WRIST_MOTOR_KP = 5.0;
+        public static final double WRIST_MOTOR_KI = 0.05;
+        public static final double WRIST_MOTOR_KD = 0.5;
         public static final double WRIST_MOTOR_CRUISE = 1000;
         public static final double WRIST_MOTOR_ACCELERATION = 400;
         public static final int WRIST_POSITION_MIN = 205;
@@ -149,7 +149,7 @@ public final class Constants {
         public static final int WRIST_POSITION_STRAIGHT = 952;
         public static final int WRIST_POSITION_STOWED = 1550;
         public static final int WRIST_POSITION_CONE_PICKUP = 396;
-        public static final int WRIST_POSITION_CUBE_PICKUP = 268;
+        public static final int WRIST_POSITION_CUBE_PICKUP = 205;
 
         public static final int TALON_TIMEOUT_MS = 5000;
     }
@@ -173,11 +173,11 @@ public final class Constants {
         public static final int EXTEND_MOTOR_TEST_85 = 19848;
         public static final int EXTEND_MOTOR_TEST_15 = 3914;
         public static final int EXTEND_POSITION_SHELF = 4938;   
-        public static final int EXTEND_POSITION_HIGH = 22930;   
-        public static final int EXTEND_POSITION_MID = 9076;   
+        public static final int EXTEND_POSITION_HIGH = 18780;   
+        public static final int EXTEND_POSITION_MID = 5617;   
         public static final int EXTEND_POSITION_LOW = 0;
         public static final int EXTEND_POSITION_CONE_PICKUP = 5710;   
-        public static final int EXTEND_POSITION_CUBE_PICKUP = 6940;   
+        public static final int EXTEND_POSITION_CUBE_PICKUP = 8700;   
         public static final int EXTEND_TOLERANCE = 200;
         public static final int TALON_TIMEOUT_MS = 5000;
     }

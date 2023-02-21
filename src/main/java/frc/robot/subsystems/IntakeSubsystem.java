@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 public class IntakeSubsystem extends SubsystemBase {
 
     private TalonSRX m_intakeMotor;
+    private boolean m_hasCone;
 
     public IntakeSubsystem() 
     {
@@ -38,5 +39,14 @@ public class IntakeSubsystem extends SubsystemBase {
         output = minus_one_to_one;
 
         m_intakeMotor.set(ControlMode.PercentOutput, output);
+    }
+
+    public void setCone( boolean bHasCone )
+    {
+        m_hasCone = bHasCone;
+    }
+    public boolean getCone()
+    {
+        return( m_hasCone );
     }
 }

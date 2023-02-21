@@ -90,6 +90,7 @@ public class WristSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         wristPosition = value;
+        m_wristMotor.setIntegralAccumulator(0);
         m_wristMotor.set(ControlMode.MotionMagic, value);
         nt_wrist_set.setDouble( wristPosition );
     }
