@@ -41,6 +41,7 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotor.configFactoryDefault();
         m_shoulderMotor.setNeutralMode(NeutralMode.Brake);
         m_shoulderMotor.configSelectedFeedbackSensor( FeedbackDevice.CTRE_MagEncoder_Absolute, 0, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configSelectedFeedbackSensor( FeedbackDevice.CTRE_MagEncoder_Absolute, 1, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.configFeedbackNotContinuous(true, ShoulderConstants.TALON_TIMEOUT_MS);
         // Configure Talon  SRX output and sensor direction
         m_shoulderMotor.setSensorPhase(false);
@@ -123,6 +124,14 @@ public class ShoulderSubsystem extends SubsystemBase {
 
     public double getPosition(){
         return (nt_shoulder_pos.getDouble(0));
+    }
+
+    public boolean isBelowLevel()
+    {
+        if( nt_shoulder_pos.getDouble(0) > ShoulderConstants.SHOULDER_POSITION_LEVEL )
+          return true;
+        else
+          return false;
     }
 
     public double getCosine(){

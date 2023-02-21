@@ -119,7 +119,7 @@ public final class Constants {
         public static final int SHOULDER_POSITION_LOW = 2347;
         public static final int SHOULDER_POSITION_LEVEL = 1911;
         public static final int SHOULDER_POSITION_DOWN = 2935;
-        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2000;
+        public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2150;
         public static final int SHOULDER_POSITION_CONE_PICKUP = 2366;
         public static final int SHOULDER_POSITION_CUBE_PICKUP = 2423;
         public static final int SHOULDER_POSITION_STOWED = 2579;

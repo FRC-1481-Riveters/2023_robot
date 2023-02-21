@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
@@ -137,7 +138,8 @@ public class RobotContainer
 
         new JoystickButton(operatorJoystick, XboxController.Button.kLeftBumper.value).whenPressed(ShelfLoadCmd());
 
-        new JoystickButton(operatorJoystick, XboxController.Button.kBack.value).whenPressed( StowCmd() );
+        new JoystickButton(operatorJoystick, XboxController.Button.kBack.value)
+            .whenPressed( new ConditionalCommand( StowCmdLow(), StowCmdHigh(), shoulderSubsystem::isBelowLevel ) );
 
         new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
 
@@ -280,38 +282,38 @@ public class RobotContainer
     }
 
 
-    public Command StowCmd()
+    public Command StowCmdLow()
     {
-        if (shoulderSubsystem.getPosition() > ShoulderConstants.SHOULDER_POSITION_LEVEL)
-        {
-            return new SequentialCommandGroup(
-                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
-                new WaitCommand(20),
-                new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX, true),
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
-                ),
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
-                new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
-                new InstantCommand(() -> extendSubsystem.setExtend(0)),
-                new InstantCommand(() -> intakeSubsystem.setIntake(0)),
-                new InstantCommand(() -> wristSubsystem.setWrist(0))
-            );
-        }else{
-            return new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true),
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
-                ),
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
-                new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
-                new InstantCommand(() -> extendSubsystem.setExtend(0)),
-                new InstantCommand(() -> intakeSubsystem.setIntake(0)),
-                new InstantCommand(() -> wristSubsystem.setWrist(0))
-            );
-        }
+        return new SequentialCommandGroup(
+            new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
+            new WaitCommand(20),
+            new ParallelCommandGroup(
+                new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX, true),
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
+            ),
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
+            new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
+            new InstantCommand(() -> extendSubsystem.setExtend(0)),
+            new InstantCommand(() -> intakeSubsystem.setIntake(0)),
+            new InstantCommand(() -> wristSubsystem.setWrist(0))
+        );
+    }
+
+    public Command StowCmdHigh()
+    {
+        return new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true),
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
+            ),
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
+            new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
+            new InstantCommand(() -> extendSubsystem.setExtend(0)),
+            new InstantCommand(() -> intakeSubsystem.setIntake(0)),
+            new InstantCommand(() -> wristSubsystem.setWrist(0))
+        );
     }
 
     public Command ScoreHighCmd(){
