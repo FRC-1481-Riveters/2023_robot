@@ -20,7 +20,7 @@ public class WristPositionCmd extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("WristPositionCmd " + m_setPosition);
+    System.out.println( "WristPositionCmd to " + m_setPosition + ", current " + m_wristSubsystem.getPosition());
     m_wristSubsystem.setPosition(m_setPosition);
   }
 

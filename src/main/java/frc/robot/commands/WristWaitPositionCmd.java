@@ -17,16 +17,24 @@ public class WristWaitPositionCmd extends CommandBase {
         m_position = position;
     }
     
-  // Returns true when the command should end.
+    @Override
+    public void initialize() 
+    {
+      System.out.println("WristWaitPositionCmd to " + m_position + ", current " + m_wristSubsystem.getPosition() );
+    }
+  
+    // Returns true when the command should end.
   @Override
   public boolean isFinished() {
       boolean retval;
       if( (m_bLessIfFalse == false) && (m_wristSubsystem.getPosition() < m_position + WristConstants.WRIST_TOLERANCE) )
       {
+        System.out.println("WristWaitPositionCmd finished: " + m_wristSubsystem.getPosition() + " lt " + m_position);
         retval = true;
       }
-      else if(m_wristSubsystem.getPosition() > m_position + WristConstants.WRIST_TOLERANCE)
+      else if((m_bLessIfFalse == true) && m_wristSubsystem.getPosition() > m_position + WristConstants.WRIST_TOLERANCE)
       {
+        System.out.println("WristWaitPositionCmd finished: " + m_wristSubsystem.getPosition() + " gt " + m_position);
         retval = true;
       }
       else

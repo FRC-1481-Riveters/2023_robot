@@ -24,6 +24,7 @@ public class ExtendPositionCmd extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println( "ExtendPositionCmd to " + m_setPosition + ", current " + m_extendSubsystem.getPosition());
     countdown_pid_handoff = 0;
     m_extendSubsystem.setExtend(0);
     if( atPosition() == false )

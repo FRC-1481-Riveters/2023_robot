@@ -29,6 +29,7 @@ public class ShoulderPositionCmd extends CommandBase {
   public void initialize() {
     double position;
     countdown_pid_handoff = 0;
+    System.out.println( "ShoulderPositionCmd to " + m_setPosition + ", current " + m_shoulderSubsystem.getPosition());
     m_shoulderSubsystem.setShoulder(0);
     position = m_shoulderSubsystem.getPosition();
     if( m_setPosition > ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL )
@@ -42,9 +43,9 @@ public class ShoulderPositionCmd extends CommandBase {
     if( atPosition() == false )
     {
       if( position < m_setPosition )
-        m_shoulderSubsystem.setShoulder(0.5);
+        m_shoulderSubsystem.setShoulder(0.7);
       else
-        m_shoulderSubsystem.setShoulder(-0.5);
+        m_shoulderSubsystem.setShoulder(-0.7);
     }
     //m_shoulderSubsystem.setPosition(m_setPosition);
     System.out.println(System.currentTimeMillis() + " ShoulderPositionCmd " + m_setPosition);

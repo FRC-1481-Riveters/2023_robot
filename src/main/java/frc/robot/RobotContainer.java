@@ -80,7 +80,7 @@ public class RobotContainer
 
     private boolean isPracticeRobot;
 
-    double driveSlowDivider = 2.2;
+    double driveDivider = 1.5;
 
     GamepadAxisButton m_operatorRightYAxisUp;
     GamepadAxisButton m_operatorRightYAxisDown;
@@ -106,9 +106,9 @@ public class RobotContainer
         
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis) / driveSlowDivider,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis) / driveSlowDivider,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxis) / driveSlowDivider,
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis) / driveDivider,
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis) / driveDivider,
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxis) / driveDivider,
                 () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)));
 
         configureButtonBindings();
@@ -125,7 +125,7 @@ public class RobotContainer
 
     private void DriveSlowDividerSet( double divider )
     {
-        driveSlowDivider = divider;
+        driveDivider = divider;
     }
     
     private void configureButtonBindings() 
@@ -134,7 +134,11 @@ public class RobotContainer
 
         new JoystickButton(driverJoystick, XboxController.Button.kLeftBumper.value)
            .whenPressed(() -> DriveSlowDividerSet(1.0))
-           .whenReleased(() -> DriveSlowDividerSet(2.2));
+           .whenReleased(() -> DriveSlowDividerSet(1.5));
+        
+           new JoystickButton(driverJoystick, XboxController.Button.kRightBumper.value)
+           .whenPressed(() -> DriveSlowDividerSet(2.6))
+           .whenReleased(() -> DriveSlowDividerSet(1.5));
         
         new JoystickButton(operatorJoystick, XboxController.Button.kY.value)
             .whileTrue( ScoreHighCmd()
@@ -299,10 +303,19 @@ public class RobotContainer
                 swerveSubsystem);
 
         // 5. Add some init and wrap-up, and return everything
+        /*
         return new SequentialCommandGroup(
                 new InstantCommand(() -> swerveSubsystem.resetOdometry(circleTrajectory.getInitialPose())),
                 swerveControllerCommand,
                 new InstantCommand(() -> swerveSubsystem.stopModules()));
+        */
+        return new SequentialCommandGroup(
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(1.0),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            StowCmdHigh()
+        );
     }
 
 
@@ -311,6 +324,7 @@ public class RobotContainer
         // STOW when the arm starts below level
         return new SequentialCommandGroup(
             // Move SHOULDER up to clear the bumper
+            new InstantCommand( ()->System.out.println("StowCmdLow") ),
             new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
             new ParallelCommandGroup(
                 // Move WRIST all the way in
@@ -335,6 +349,7 @@ public class RobotContainer
     {
         // STOW when the arm is above level
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("StowCmdHigh") ),
             new ParallelCommandGroup(
                 // Move EXTEND all the way in
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
@@ -358,9 +373,13 @@ public class RobotContainer
 
     public Command ScoreHighCmd(){
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ScoreHighCmd") ),
             new ParallelCommandGroup(
-                // Pull game piece in a little
-                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                // Pull game piece in a little IF IT IS A CONE
+                new ConditionalCommand(
+                    new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                    new WaitCommand(0),
+                    intakeSubsystem::getCone ),
                 // Pull EXTEND all the way in
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true)
             ),
@@ -383,9 +402,13 @@ public class RobotContainer
 
     public Command ScoreMidCmd(){
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ScoreMidCmd") ),
             new ParallelCommandGroup(
-                // Pull game piece in a little
-                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                // Pull game piece in a little IF IT IS A CONE
+                new ConditionalCommand(
+                    new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                    new WaitCommand(0),
+                    intakeSubsystem::getCone ),
                 // Pull EXTEND all the way in
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true)
             ),
@@ -408,9 +431,13 @@ public class RobotContainer
 
     public Command ScoreLowCmd(){
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ScoreLowCmd") ),
             new ParallelCommandGroup(
-                // Pull game piece in a little
-                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                // Pull game piece in a little IF IT IS A CONE
+                new ConditionalCommand(
+                    new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                    new WaitCommand(0),
+                    intakeSubsystem::getCone ),
                 // Pull EXTEND all the way in
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true)
             ),
@@ -435,6 +462,7 @@ public class RobotContainer
 
     public Command ShelfLoadConeCmd(){
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ShelfLoadConeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ParallelCommandGroup (
@@ -456,6 +484,7 @@ public class RobotContainer
 
     public Command ShelfLoadCubeCmd(){
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ShelfLoadCubeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ParallelCommandGroup (
@@ -478,6 +507,7 @@ public class RobotContainer
     public Command FloorLoadConeCmd()
     {
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("FloorLoadConeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             // Move SHOULDER to above bumper
@@ -496,6 +526,7 @@ public class RobotContainer
     public Command FloorLoadCubeCmd()
     {
         return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("FloorLoadCubeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             // Move SHOULDER to above bumper
@@ -523,6 +554,9 @@ public class RobotContainer
     {
         if( interrupted == false )
         {
+            System.out.println("RumbleConfirm false");
+            // Make a solid rumble to tell the
+            // operator+driver that the motion completed
             CommandScheduler.getInstance().schedule(
                 RumbleCmd( 1.0 ),
                 new WaitCommand(0.5),
@@ -531,8 +565,22 @@ public class RobotContainer
         }
         else
         {
-            operatorJoystick.setRumble(RumbleType.kLeftRumble, 0);
-            driverJoystick.setRumble(RumbleType.kLeftRumble, 0);
+            System.out.println("RumbleConfirm true");
+            // Make a half-hearted 3 rumble bursts to tell the
+            // operator+driver the motion didn't complete
+            CommandScheduler.getInstance().schedule(
+                RumbleCmd( 0.5 ),
+                new WaitCommand(0.2),
+                RumbleCmd( 0.0 ),
+                new WaitCommand(0.2),
+                RumbleCmd( 0.5 ),
+                new WaitCommand(0.2),
+                RumbleCmd( 0.0 ),
+                new WaitCommand(0.2),
+                RumbleCmd( 0.5 ),
+                new WaitCommand(0.2),
+                RumbleCmd( 0.0 )
+            );
         }
     }
  }
