@@ -25,7 +25,7 @@ public class WristWaitPositionCmd extends CommandBase {
       {
         retval = true;
       }
-      else if(m_wristSubsystem.getPosition() < m_position + WristConstants.WRIST_TOLERANCE)
+      else if(m_wristSubsystem.getPosition() > m_position + WristConstants.WRIST_TOLERANCE)
       {
         retval = true;
       }
