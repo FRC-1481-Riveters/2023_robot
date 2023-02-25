@@ -155,7 +155,11 @@ public class RobotContainer
             );
 
         new JoystickButton(operatorJoystick, XboxController.Button.kBack.value)
-            .whileTrue( new ConditionalCommand( StowCmdLow(), StowCmdHigh(), shoulderSubsystem::isBelowLevel )
+            .whileTrue( 
+                new SequentialCommandGroup(
+                    new InstantCommand( ()-> shoulderSubsystem.latchStartingPosition() ),
+                    new ConditionalCommand( StowCmdLow(), StowCmdHigh(), shoulderSubsystem::startedBelowLevel )
+                )
             .finallyDo( this::RumbleConfirm )
             );
 

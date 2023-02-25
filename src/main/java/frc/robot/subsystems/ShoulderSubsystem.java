@@ -22,6 +22,7 @@ public class ShoulderSubsystem extends SubsystemBase {
     private GenericEntry kI, kD, kCruise, kAcceleration;
     private GenericEntry nt_shoulder_pos, nt_shoulder_set;
     private double shoulderPosition;
+    private double startingPosition;
 
     public ShoulderSubsystem() 
     {
@@ -126,9 +127,14 @@ public class ShoulderSubsystem extends SubsystemBase {
         return (nt_shoulder_pos.getDouble(0));
     }
 
-    public boolean isBelowLevel()
+    public void latchStartingPosition()
     {
-        if( nt_shoulder_pos.getDouble(0) > ShoulderConstants.SHOULDER_POSITION_LEVEL )
+        startingPosition = nt_shoulder_pos.getDouble(0);
+    }
+
+    public boolean startedBelowLevel()
+    {
+        if( startingPosition > ShoulderConstants.SHOULDER_POSITION_LEVEL )
           return true;
         else
           return false;
