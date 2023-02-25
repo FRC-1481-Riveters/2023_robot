@@ -9,55 +9,47 @@ import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeJogCmd extends CommandBase {
 
-  private enum IntakePiece
-  {
-    hasNothing,
-    hasCube,
-    hasCone
-  };
-
   private IntakeSubsystem m_intakeSubsystem;
-  private boolean m_isCube, m_isLoading, m_isScoring;;
-  private static IntakePiece intakePiece = IntakePiece.hasNothing;
+  private boolean m_isLoading;
 
 
   /** Creates a new ExtendJogUp. */
-  public IntakeJogCmd( IntakeSubsystem intakeSubsystem, boolean bIsCube, boolean bIsLoading ) {
+  public IntakeJogCmd( IntakeSubsystem intakeSubsystem, boolean bIsLoading ) 
+  {
     // Use addRequirements() here to declare subsystem dependencies.
     m_intakeSubsystem = intakeSubsystem;
     addRequirements((intakeSubsystem));
-    m_isCube = bIsCube;
     m_isLoading= bIsLoading;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("intake jog cmd");
+    System.out.println("intake jog cmd" + m_isLoading);
     if( m_isLoading == true )
     {
-      if( (m_isCube == true) && (intakePiece != IntakePiece.hasCone) )
-      {      
-        intakePiece = IntakePiece.hasCube;
-        m_intakeSubsystem.setIntake( -0.5 );
+      if( m_intakeSubsystem.getCone() == true )
+      {
+        // Load cones in with full intake speed
+        m_intakeSubsystem.setIntake( 1.0 );
       }
       else
       {
-        intakePiece = IntakePiece.hasCone;
-        m_intakeSubsystem.setIntake( 1.0 );
+        // Load cubes in a little slower (and note cube vs. cone intake is opposite direction)
+        m_intakeSubsystem.setIntake( -0.5 );
       }
     }
     else
-    {      
-      if( intakePiece == IntakePiece.hasCone )
+    {   
+      // Depositing gamepiece
+      if( m_intakeSubsystem.getCone() == true )
       {
         m_intakeSubsystem.setIntake( -0.5 );
       }
       else
       {
-        m_intakeSubsystem.setIntake( 0.4 );
+        m_intakeSubsystem.setIntake( 0.35 );
       }
-      intakePiece = IntakePiece.hasNothing;
     }
   }
 
@@ -65,12 +57,14 @@ public class IntakeJogCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-    if( intakePiece == IntakePiece.hasCone && m_isLoading == true )
+    if( m_intakeSubsystem.getCone() == true && m_isLoading == true )
     {
+      // For cones, the intake runs the cone up into the wrist to avoid dropping it
       m_intakeSubsystem.setIntake(0.07);
     }
     else
     {
+      // For cubes, you can just drop it
       m_intakeSubsystem.setIntake(0.0);
     }
   }

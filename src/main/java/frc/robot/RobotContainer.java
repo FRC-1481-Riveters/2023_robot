@@ -7,7 +7,9 @@ import java.util.List;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -87,7 +90,7 @@ public class RobotContainer
     GamepadAxisButton m_operatorDpadDown;
     GamepadAxisButton m_operatorDpadLeft;
     GamepadAxisButton m_operatorDpadRight;
-    GamepadAxisButton m_driverLTCube, m_driverLTCone, m_driverRT;
+    GamepadAxisButton m_driverLT, m_driverRT;
 
 
 
@@ -125,24 +128,36 @@ public class RobotContainer
     
     private void configureButtonBindings() 
     {
-        new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed(() -> swerveSubsystem.zeroHeading());
+        new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed( () -> swerveSubsystem.zeroHeading() );
 
         new JoystickButton(driverJoystick, XboxController.Button.kLeftBumper.value)
            .whenPressed(() -> DriveSlowDividerSet(1.0))
            .whenReleased(() -> DriveSlowDividerSet(2.2));
         
-        new JoystickButton(operatorJoystick, XboxController.Button.kY.value).whenPressed(ScoreHighCmd());
-        new JoystickButton(operatorJoystick, XboxController.Button.kB.value).whenPressed(ScoreMidCmd());
-        new JoystickButton(operatorJoystick, XboxController.Button.kA.value).whenPressed(ScoreLowCmd());
+        new JoystickButton(operatorJoystick, XboxController.Button.kY.value)
+            .whileTrue( ScoreHighCmd()
+            .finallyDo( this::RumbleConfirm )
+            );
+        new JoystickButton(operatorJoystick, XboxController.Button.kB.value)
+            .whileTrue( ScoreMidCmd() 
+            .finallyDo( this::RumbleConfirm )
+            );
+        new JoystickButton(operatorJoystick, XboxController.Button.kA.value)
+            .whileTrue( ScoreLowCmd() 
+            .finallyDo( this::RumbleConfirm )
+            );
 
-        new JoystickButton(operatorJoystick, XboxController.Button.kLeftBumper.value).whenPressed(ShelfLoadConeCmd());
+        new JoystickButton(operatorJoystick, XboxController.Button.kLeftBumper.value)
+            .whileTrue( new ConditionalCommand( ShelfLoadConeCmd(), ShelfLoadCubeCmd(), intakeSubsystem::getCone )
+            .finallyDo( this::RumbleConfirm )
+            );
 
-        new JoystickButton(operatorJoystick, XboxController.Button.kRightBumper.value).whenPressed(ShelfLoadCubeCmd());
-
-        new JoystickButton(operatorJoystick, XboxController.Button.kBack.value).whenPressed( StowCmd() );
+        new JoystickButton(operatorJoystick, XboxController.Button.kBack.value)
+            .whileTrue( new ConditionalCommand( StowCmdLow(), StowCmdHigh(), shoulderSubsystem::isBelowLevel )
+            .finallyDo( this::RumbleConfirm )
+            );
 
         new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
-
 
         m_operatorRightYAxisUp = new GamepadAxisButton(this::operatorRightYAxisUp);
         m_operatorRightYAxisUp.whileTrue( new ShoulderJogUpCmd( shoulderSubsystem ) );
@@ -154,78 +169,81 @@ public class RobotContainer
         m_operatorDpadDown = new GamepadAxisButton(this::operatorDpadDown);
         m_operatorDpadDown.whileTrue( new WristJogDownCmd( wristSubsystem ) );
 
-// CODE FOR TESTING AXES INDIVIDUALLY
-//        m_operatorDpadLeft = new GamepadAxisButton(this::operatorDpadLeft);
-//        m_operatorDpadLeft.whileTrue( new WristPositionCmd( wristSubsystem, WristConstants.WRIST_POSITION_TEST_15, false) );
-//        m_operatorDpadLeft.whileTrue( new ShoulderPositionCmd( shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF, false) );
-//        m_operatorDpadLeft.whileTrue( new ExtendPositionCmd( extendSubsystem, ExtendConstants.EXTEND_MOTOR_TEST_15, true) );
-//        m_operatorDpadRight = new GamepadAxisButton(this::operatorDpadRight);
-//        m_operatorDpadRight.whileTrue( new WristPositionCmd( wristSubsystem, WristConstants.WRIST_POSITION_TEST_85, false) );
-//        m_operatorDpadRight.whileTrue( new ShoulderPositionCmd( shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, false) );
-//        m_operatorDpadRight.whileTrue( new ExtendPositionCmd( extendSubsystem, ExtendConstants.EXTEND_MOTOR_TEST_85, true) );
+        m_operatorDpadLeft = new GamepadAxisButton(this::operatorDpadLeft);
+        m_operatorDpadLeft.onTrue(
+            new SequentialCommandGroup(
+                new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+                new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 1.0) ),
+                new WaitCommand(0.5),
+                new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 0.0) )
+            )
+         );
+        m_operatorDpadRight = new GamepadAxisButton(this::operatorDpadRight);
+        m_operatorDpadRight.onTrue( 
+            new SequentialCommandGroup(
+                new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+                new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kRightRumble, 1.0) ),
+                new WaitCommand(0.5),
+                new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kRightRumble, 0.0) )
+            )
+        );
 
         m_operatorLeftYAxisUp = new GamepadAxisButton(this::operatorLeftYAxisUp);
         m_operatorLeftYAxisUp.whileTrue( new ExtendJogOutCmd( extendSubsystem ) );
         m_operatorLeftYAxisDown = new GamepadAxisButton(this::operatorLeftYAxisDown);
         m_operatorLeftYAxisDown.whileTrue( new ExtendJogInCmd( extendSubsystem ) );
-        m_operatorLeftTrigger = new GamepadAxisButton(this::operatorLeftTrigger);
-        m_operatorLeftTrigger.onTrue( FloorLoadConeCmd() );
-        m_operatorRightTrigger = new GamepadAxisButton(this::operatorRightTrigger);
-        m_operatorRightTrigger.onTrue( FloorLoadCubeCmd() );
 
-        m_driverLTCube = new GamepadAxisButton(this::DriverLTriggerHalf);
-        m_driverLTCube.whileTrue( new IntakeJogCmd( intakeSubsystem, true, true ) );
-        m_driverLTCone = new GamepadAxisButton(this::DriverLTriggerFull);
-        m_driverLTCone.whileTrue( new IntakeJogCmd( intakeSubsystem, false, true ) );
+        m_operatorLeftTrigger = new GamepadAxisButton(this::operatorLeftTrigger);
+        m_operatorLeftTrigger
+            .whileTrue( new ConditionalCommand( FloorLoadConeCmd(), FloorLoadCubeCmd(), intakeSubsystem::getCone )
+            .finallyDo( this::RumbleConfirm )
+        );
+
+        m_driverLT = new GamepadAxisButton(this::DriverLTrigger);
+        m_driverLT.whileTrue( new IntakeJogCmd( intakeSubsystem, true ) );
         m_driverRT = new GamepadAxisButton(this::DriverRTtrigger);
-        m_driverRT.whileTrue( new IntakeJogCmd( intakeSubsystem, false, false ) );
+        m_driverRT.whileTrue( new IntakeJogCmd( intakeSubsystem, false ) );
     }
 
     public boolean operatorRightYAxisUp()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) < -0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) < -0.3 );
     }
 
     public boolean operatorRightYAxisDown()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightY.value ) > 0.3 );
     }
 
-    public boolean DriverLTriggerHalf()
+    public boolean DriverLTrigger()
     {
-        return ( (driverJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.15) &&
-                 (driverJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) < 0.8) );
-    }
-
-    public boolean DriverLTriggerFull()
-    {
-        return ( (driverJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.9) );
+        return ( driverJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.3 );
     }
 
     public boolean DriverRTtrigger()
     {
-        return ( driverJoystick.getRawAxis( XboxController.Axis.kRightTrigger.value ) > 0.5 );
+        return ( driverJoystick.getRawAxis( XboxController.Axis.kRightTrigger.value ) > 0.3 );
     }
 
     
     public boolean operatorLeftYAxisUp()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) < -0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) < -0.3 );
     }
 
     public boolean operatorLeftYAxisDown()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftY.value ) > 0.3 );
     }
 
     public boolean operatorLeftTrigger()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kLeftTrigger.value ) > 0.3 );
     }
 
     public boolean operatorRightTrigger()
     {
-        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightTrigger.value ) > 0.5 );
+        return ( operatorJoystick.getRawAxis( XboxController.Axis.kRightTrigger.value ) > 0.3 );
     }
 
     public boolean operatorDpadUp()
@@ -282,43 +300,43 @@ public class RobotContainer
     }
 
 
-    public Command StowCmd()
+    public Command StowCmdLow()
     {
-        if (shoulderSubsystem.getPosition() > ShoulderConstants.SHOULDER_POSITION_LEVEL)
-        {
-            return new SequentialCommandGroup(
-                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
-                new WaitCommand(20),
-                new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX, true),
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
-                ),
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
-                new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
-                new InstantCommand(() -> extendSubsystem.setExtend(0)),
-                new InstantCommand(() -> intakeSubsystem.setIntake(0)),
-                new InstantCommand(() -> wristSubsystem.setWrist(0))
-            );
-        }else{
-            return new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true),
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
-                ),
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
-                new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
-                new InstantCommand(() -> extendSubsystem.setExtend(0)),
-                new InstantCommand(() -> intakeSubsystem.setIntake(0)),
-                new InstantCommand(() -> wristSubsystem.setWrist(0))
-            );
-        }
+        return new SequentialCommandGroup(
+            new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
+            new WaitCommand(20),
+            new ParallelCommandGroup(
+                new ExtendPositionCmd (extendSubsystem, 0.3 * ExtendConstants.EXTEND_MOTOR_MAX, true),
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
+            ),
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
+            new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
+            new InstantCommand(() -> extendSubsystem.setExtend(0)),
+            new InstantCommand(() -> intakeSubsystem.setIntake(0)),
+            new InstantCommand(() -> wristSubsystem.setWrist(0))
+        );
+    }
+
+    public Command StowCmdHigh()
+    {
+        return new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true),
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
+            ),
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_MOTOR_MAX, true),
+            new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
+            new InstantCommand(() -> extendSubsystem.setExtend(0)),
+            new InstantCommand(() -> intakeSubsystem.setIntake(0)),
+            new InstantCommand(() -> wristSubsystem.setWrist(0))
+        );
     }
 
     public Command ScoreHighCmd(){
             return new SequentialCommandGroup(
-                new IntakeJogCmd( intakeSubsystem, true, true ).withTimeout(0.1),
+                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
                 new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH, true),
                 new ParallelCommandGroup(
@@ -330,7 +348,7 @@ public class RobotContainer
 
     public Command ScoreMidCmd(){
         return new SequentialCommandGroup(
-            new IntakeJogCmd( intakeSubsystem, true, true ).withTimeout(0.1),
+            new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_MID, true),
             new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID, true),
@@ -340,7 +358,7 @@ public class RobotContainer
 
     public Command ScoreLowCmd(){
         return new SequentialCommandGroup(
-            new IntakeJogCmd( intakeSubsystem, true, true ).withTimeout(0.1),
+            new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LEVEL, true),
             new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_LOW, true),
@@ -397,5 +415,28 @@ public class RobotContainer
         );
     }
 
+    public Command RumbleCmd( double rumbleAmount )
+    {
+        return new ParallelCommandGroup(
+            new InstantCommand(() -> operatorJoystick.setRumble(RumbleType.kLeftRumble, rumbleAmount) ),
+            new InstantCommand(() -> driverJoystick.setRumble(RumbleType.kLeftRumble, rumbleAmount) )
+        );
+    }
     
+    public void RumbleConfirm( boolean interrupted )
+    {
+        if( interrupted == false )
+        {
+            CommandScheduler.getInstance().schedule(
+                RumbleCmd( 1.0 ),
+                new WaitCommand(0.5),
+                RumbleCmd( 0.0 )
+            );
+        }
+        else
+        {
+            operatorJoystick.setRumble(RumbleType.kLeftRumble, 0);
+            driverJoystick.setRumble(RumbleType.kLeftRumble, 0);
+        }
+    }
  }

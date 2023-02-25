@@ -44,6 +44,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void setCone( boolean bHasCone )
     {
         m_hasCone = bHasCone;
+        System.out.println("setCone "  + bHasCone);
     }
     public boolean getCone()
     {
