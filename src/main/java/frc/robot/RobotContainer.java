@@ -367,9 +367,11 @@ public class RobotContainer
                     // Wait for SHOULDER to be above bumper
                     new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
                     // Move WRIST to HIGH position
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_HIGH, true)
+                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_HIGH, false)
                 )
             ),
+            // Wait until wrist is past straight
+            new WristWaitPositionCmd(wristSubsystem, false, WristConstants.WRIST_POSITION_STRAIGHT),
             // Move EXTEND to HIGH position
             new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_HIGH, true)
         );
@@ -390,9 +392,11 @@ public class RobotContainer
                     // Wait for SHOULDER to be above bumper
                     new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
                     // Move WRIST to MID position
-                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID, true)
+                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID, false)
                 )
             ),
+            // Wait until wrist is past straight
+            new WristWaitPositionCmd(wristSubsystem, false, WristConstants.WRIST_POSITION_STRAIGHT),
             // Move EXTEND to MID position
             new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_MID, true)
         );
