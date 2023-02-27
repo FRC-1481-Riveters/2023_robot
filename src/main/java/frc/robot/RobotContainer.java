@@ -554,32 +554,34 @@ public class RobotContainer
     {
         if( interrupted == false )
         {
-            System.out.println("RumbleConfirm false");
             // Make a solid rumble to tell the
             // operator+driver that the motion completed
             CommandScheduler.getInstance().schedule(
-                RumbleCmd( 1.0 ),
-                new WaitCommand(0.5),
-                RumbleCmd( 0.0 )
+                new SequentialCommandGroup(
+                    RumbleCmd( 1.0 ),
+                    new WaitCommand(0.5),
+                    RumbleCmd( 0.0 )
+                )
             );
         }
         else
         {
-            System.out.println("RumbleConfirm true");
             // Make a half-hearted 3 rumble bursts to tell the
             // operator+driver the motion didn't complete
             CommandScheduler.getInstance().schedule(
-                RumbleCmd( 0.5 ),
-                new WaitCommand(0.2),
-                RumbleCmd( 0.0 ),
-                new WaitCommand(0.2),
-                RumbleCmd( 0.5 ),
-                new WaitCommand(0.2),
-                RumbleCmd( 0.0 ),
-                new WaitCommand(0.2),
-                RumbleCmd( 0.5 ),
-                new WaitCommand(0.2),
-                RumbleCmd( 0.0 )
+                new SequentialCommandGroup(
+                    RumbleCmd( 0.5 ),
+                    new WaitCommand(0.1),
+                    RumbleCmd( 0.0 ),
+                    new WaitCommand(0.1),
+                    RumbleCmd( 0.5 ),
+                    new WaitCommand(0.1),
+                    RumbleCmd( 0.0 ),
+                    new WaitCommand(0.1),
+                    RumbleCmd( 0.5 ),
+                    new WaitCommand(0.1),
+                    RumbleCmd( 0.0 )
+                )
             );
         }
     }

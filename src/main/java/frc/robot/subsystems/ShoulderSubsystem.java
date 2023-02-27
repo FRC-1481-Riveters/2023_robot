@@ -134,10 +134,14 @@ public class ShoulderSubsystem extends SubsystemBase {
 
     public boolean startedBelowLevel()
     {
+        boolean rc;
+
         if( startingPosition > ShoulderConstants.SHOULDER_POSITION_LEVEL )
-          return true;
+          rc =true;
         else
-          return false;
+          rc = false;
+
+        return rc;
     }
 
     public double getCosine(){
