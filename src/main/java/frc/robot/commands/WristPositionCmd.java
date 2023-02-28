@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.WristSubsystem;
 
 public class WristPositionCmd extends CommandBase {
@@ -29,6 +30,10 @@ public class WristPositionCmd extends CommandBase {
   public boolean isFinished() {
       if( m_wristSubsystem.atPosition() || m_waitAtPosition == false)
       {
+        if (m_setPosition == WristConstants.WRIST_POSITION_STOWED )
+        {
+          m_wristSubsystem.setWrist(0);
+        }
         System.out.println("WristPositionCmd " + m_setPosition + " done");
         return true;
       }

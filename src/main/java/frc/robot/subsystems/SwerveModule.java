@@ -4,6 +4,7 @@ package frc.robot.subsystems;
 //import com.revrobotics.RelativeEncoder;
 //import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -29,6 +30,12 @@ public class SwerveModule {
     private final CANCoder absoluteEncoder;
     private final boolean absoluteEncoderReversed;
     private final double absoluteEncoderOffsetDegrees;
+
+    public static final double drive_kA = 0.12872;
+    public static final double drive_kV = 2.3014;
+    public static final double drive_kS = 0.55493;
+    private SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward( drive_kS, drive_kV, drive_kA );
+
 
     public SwerveModule(int driveMotorId, int turningMotorId, boolean driveMotorReversed, boolean turningMotorReversed,
             int absoluteEncoderId, double absoluteEncoderOffsetDegrees, boolean absoluteEncoderReversed) {
@@ -106,7 +113,7 @@ public class SwerveModule {
 
     public double getDriveVelocity() {
         double velocity;
-        velocity = driveMotor.getSelectedSensorVelocity();
+        velocity = -driveMotor.getSelectedSensorVelocity();
 
         velocity = (velocity / 204.8) * (14.0 / 50.0) * (28.0 / 16.0) * (15.0 / 60.0);
         velocity = velocity * ModuleConstants.kWheelDiameterMeters * Math.PI;
@@ -154,8 +161,9 @@ public class SwerveModule {
             return;
         }
         state = SwerveModuleState.optimize(state, getState().angle);
-        driveMotor.set( ControlMode.PercentOutput, 
-                        state.speedMetersPerSecond / DriveConstants.kPhysicalMaxSpeedMetersPerSecond );
+        //!*!*!*FIXME double speed = m_feedForward.calculate( state.speedMetersPerSecond );
+        double speed = state.speedMetersPerSecond;
+        driveMotor.set( ControlMode.PercentOutput, speed / DriveConstants.kPhysicalMaxSpeedMetersPerSecond );
         turningMotor.set( ControlMode.PercentOutput, 
                           turningPidController.calculate( getTurningPosition(), state.angle.getRadians() ) );
         SmartDashboard.putNumber("Turning Position[" + absoluteEncoder.getDeviceID() + "]", turningMotor.getSelectedSensorPosition() );

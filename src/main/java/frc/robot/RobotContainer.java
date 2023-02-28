@@ -2,6 +2,7 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -19,6 +20,8 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -79,6 +82,8 @@ public class RobotContainer
     private Trajectory circleTrajectory = new Trajectory();
 
     private boolean isPracticeRobot;
+
+    private Field2d m_field;
 
     double driveDivider = 1.5;
 
@@ -278,9 +283,10 @@ public class RobotContainer
 
 
     public Command getAutonomousCommand() {
+
         // 1. Create trajectory settings
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
+                1.0,
                 AutoConstants.kMaxAccelerationMetersPerSecondSquared)
                         .setKinematics(DriveConstants.kDriveKinematics);
 
@@ -290,6 +296,13 @@ public class RobotContainer
         ProfiledPIDController thetaController = new ProfiledPIDController(
                 AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        circleTrajectory = TrajectoryGenerator.generateTrajectory(
+           new Pose2d(3 , 0 , new Rotation2d(Math.toRadians(0))) ,
+           List.of(),
+           new Pose2d(3 , 3.0, new Rotation2d(Math.toRadians(0))),
+           trajectoryConfig
+        );
 
         // 4. Construct command to follow trajectory
         SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
@@ -302,20 +315,27 @@ public class RobotContainer
                 swerveSubsystem::setModuleStates,
                 swerveSubsystem);
 
+        // Create and push Field2d to SmartDashboard.
+        m_field = new Field2d();
+        SmartDashboard.putData(m_field);
+        
+        // Push the trajectory to Field2d.
+        m_field.getObject("traj").setTrajectory(circleTrajectory);
+
         // 5. Add some init and wrap-up, and return everything
-        /*
         return new SequentialCommandGroup(
                 new InstantCommand(() -> swerveSubsystem.resetOdometry(circleTrajectory.getInitialPose())),
                 swerveControllerCommand,
                 new InstantCommand(() -> swerveSubsystem.stopModules()));
-        */
-        return new SequentialCommandGroup(
+
+        /*return new SequentialCommandGroup(
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(1.0),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             StowCmdHigh()
         );
+        */
     }
 
 
