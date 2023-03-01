@@ -5,6 +5,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -87,6 +93,7 @@ public class RobotContainer
 
     double driveDivider = 1.5;
 
+    GamepadAxisButton m_driverDpadUp;
     GamepadAxisButton m_operatorRightYAxisUp;
     GamepadAxisButton m_operatorRightYAxisDown;
     GamepadAxisButton m_operatorLeftYAxisUp;
@@ -99,6 +106,7 @@ public class RobotContainer
     GamepadAxisButton m_operatorDpadRight;
     GamepadAxisButton m_driverLT, m_driverRT;
 
+    boolean m_bCreep=false;
 
 
     public RobotContainer() 
@@ -111,9 +119,9 @@ public class RobotContainer
         
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis) / driveDivider,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis) / driveDivider,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxis) / driveDivider,
+                () -> getDriverMoveFwdBack(),
+                () -> getDriverMoveLeftRight(),
+                () -> getDriverRotate(),
                 () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)));
 
         configureButtonBindings();
@@ -127,12 +135,49 @@ public class RobotContainer
       }
     }
 
+    private double getDriverMoveFwdBack()
+    {
+        // Handle creeping forward if the driver is pressing D-pad up
+        double pos;
+        if( m_bCreep == true )
+            // Use a fixed value to creep forward
+            pos = -0.37;
+        else
+            // Use the joystick axis
+            pos = driverJoystick.getRawAxis(OIConstants.kDriverYAxis) / driveDivider;
+        return pos;
+    }
+
+    private double getDriverMoveLeftRight()
+    {
+        double pos;
+        if( m_bCreep == true )
+            pos = 0;
+        else
+            pos = driverJoystick.getRawAxis(OIConstants.kDriverXAxis) / driveDivider;
+        return pos;
+    }
+
+    private double getDriverRotate()
+    {
+        double pos;
+        if( m_bCreep == true )
+            pos = 0;
+        else
+            pos = driverJoystick.getRawAxis(OIConstants.kDriverRotAxis) / driveDivider;
+        return pos;
+    }
 
     private void DriveSlowDividerSet( double divider )
     {
         driveDivider = divider;
     }
     
+    private void setCreep(boolean bCreep )
+    {
+        m_bCreep = bCreep;
+    }
+
     private void configureButtonBindings() 
     {
         new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed( () -> swerveSubsystem.zeroHeading() );
@@ -171,6 +216,15 @@ public class RobotContainer
                 )
             .finallyDo( this::RumbleConfirm )
             );
+
+        m_driverDpadUp = new GamepadAxisButton(this::driverDpadUp);
+        m_driverDpadUp
+            .onTrue( new SequentialCommandGroup(
+                new InstantCommand( ()-> setCreep(true) ),
+                new InstantCommand( () -> swerveSubsystem.zeroHeading() )
+            ) )
+            .onFalse( new InstantCommand( ()-> setCreep(false) ) );
+    
 
         new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
 
@@ -218,6 +272,11 @@ public class RobotContainer
         m_driverLT.whileTrue( new IntakeJogCmd( intakeSubsystem, true ) );
         m_driverRT = new GamepadAxisButton(this::DriverRTtrigger);
         m_driverRT.whileTrue( new IntakeJogCmd( intakeSubsystem, false ) );
+    }
+
+    public boolean driverDpadUp()
+    {
+        return ( driverJoystick.getPOV() == 0 );
     }
 
     public boolean operatorRightYAxisUp()
@@ -282,53 +341,69 @@ public class RobotContainer
     }
 
 
-    public Command getAutonomousCommand() {
-
-        // 1. Create trajectory settings
-        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
-                1.0,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-                        .setKinematics(DriveConstants.kDriveKinematics);
-
-        // 3. Define PID controllers for tracking trajectory
-        PIDController xController = new PIDController(AutoConstants.kPXController, 0, 0);
-        PIDController yController = new PIDController(AutoConstants.kPYController, 0, 0);
-        ProfiledPIDController thetaController = new ProfiledPIDController(
-                AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-        circleTrajectory = TrajectoryGenerator.generateTrajectory(
-           new Pose2d(3 , 0 , new Rotation2d(Math.toRadians(0))) ,
-           List.of(),
-           new Pose2d(3 , 3.0, new Rotation2d(Math.toRadians(0))),
-           trajectoryConfig
+    public Command getAutonomousCommand() 
+    {
+        // Simple path with holonomic rotation. Stationary start/end. Max velocity of 4 m/s and max accel of 3 m/s^2
+        PathPlannerTrajectory traj2 = PathPlanner.generatePath(
+            new PathConstraints(0.4,1),
+            // position, heading(direction of travel), holonomic rotation
+            new PathPoint(new Translation2d(14.74, 3.04), 
+                Rotation2d.fromDegrees(-70), Rotation2d.fromDegrees(0)), 
+            new PathPoint(new Translation2d(14.50, 2.19), 
+                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(0)), 
+            new PathPoint(new Translation2d(11.09, 2.13), 
+                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(0)),
+            new PathPoint(new Translation2d(10.47, 2.13), 
+                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180)),
+            new PathPoint(new Translation2d(10.18, 2.13), 
+                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180))
         );
 
-        // 4. Construct command to follow trajectory
-        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-                circleTrajectory,
-                swerveSubsystem::getPose,
-                DriveConstants.kDriveKinematics,
-                xController,
-                yController,
-                thetaController,
-                swerveSubsystem::setModuleStates,
-                swerveSubsystem);
+/*
+ * red platform 
+1474 219 start against grid
+1109 213 past platform, lined up with cube/cone (begin turning)
+1047 213 in front of gamepiece (finish turning)
+1018 212 scoop up gamepiece
+1109 213 finish turning back around
+1267 213 drive back to center of platform
 
+ */
         // Create and push Field2d to SmartDashboard.
         m_field = new Field2d();
         SmartDashboard.putData(m_field);
         
         // Push the trajectory to Field2d.
-        m_field.getObject("traj").setTrajectory(circleTrajectory);
+        m_field.getObject("traj").setTrajectory(traj2);
 
         // 5. Add some init and wrap-up, and return everything
+        
         return new SequentialCommandGroup(
-                new InstantCommand(() -> swerveSubsystem.resetOdometry(circleTrajectory.getInitialPose())),
-                swerveControllerCommand,
-                new InstantCommand(() -> swerveSubsystem.stopModules()));
-
-        /*return new SequentialCommandGroup(
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(1.0),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            StowCmdHigh(),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand(() -> {
+                // Reset odometry for the first path you run during auto
+                swerveSubsystem.resetOdometry(traj2.getInitialHolonomicPose());
+                }),
+            new PPSwerveControllerCommand(
+                traj2, 
+                swerveSubsystem::getPose, // Pose supplier
+                DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+                new PIDController(AutoConstants.kPXController, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+                new PIDController(AutoConstants.kPYController, 0, 0), // Y controller (usually the same values as X controller)
+                new PIDController(AutoConstants.kPThetaController, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+                swerveSubsystem::setModuleStates, // Module states consumer
+                true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+                swerveSubsystem // Requires this drive subsystem
+            ),
+            new InstantCommand(() -> swerveSubsystem.stopModules())
+        );
+        /*
+        return new SequentialCommandGroup(
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(1.0),

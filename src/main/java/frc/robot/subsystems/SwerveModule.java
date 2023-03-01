@@ -31,9 +31,9 @@ public class SwerveModule {
     private final boolean absoluteEncoderReversed;
     private final double absoluteEncoderOffsetDegrees;
 
-    public static final double drive_kA = 0.12872;
-    public static final double drive_kV = 2.3014;
-    public static final double drive_kS = 0.55493;
+    public static final double drive_kA = -0.12872;
+    public static final double drive_kV = -2.3014;
+    public static final double drive_kS = -0.55493;
     private SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward( drive_kS, drive_kV, drive_kA );
 
 
@@ -161,7 +161,7 @@ public class SwerveModule {
             return;
         }
         state = SwerveModuleState.optimize(state, getState().angle);
-        //!*!*!*FIXME double speed = m_feedForward.calculate( state.speedMetersPerSecond );
+        //double speed = m_feedForward.calculate( state.speedMetersPerSecond );
         double speed = state.speedMetersPerSecond;
         driveMotor.set( ControlMode.PercentOutput, speed / DriveConstants.kPhysicalMaxSpeedMetersPerSecond );
         turningMotor.set( ControlMode.PercentOutput, 
