@@ -3,12 +3,15 @@ package frc.robot;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -43,6 +46,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
@@ -83,10 +88,6 @@ public class RobotContainer
     private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
     private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
 
-    private final String trajectoryJSON = "paths/HalfCircle.wpilib.json";
-
-    private Trajectory circleTrajectory = new Trajectory();
-
     private boolean isPracticeRobot;
 
     private Field2d m_field;
@@ -108,6 +109,9 @@ public class RobotContainer
 
     boolean m_bCreep=false;
 
+    // A chooser for autonomous commands
+    SendableChooser<Command> m_chooser = new SendableChooser<>();
+
 
     public RobotContainer() 
     {
@@ -116,7 +120,9 @@ public class RobotContainer
         input = new DigitalInput(9);
         isPracticeRobot = !input.get();
         input.close();
-        
+
+        configureAutonomousCommands();
+    
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
                 () -> getDriverMoveFwdBack(),
@@ -126,13 +132,9 @@ public class RobotContainer
 
         configureButtonBindings();
 
-      try
-      {
-         Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
-         circleTrajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-      } catch (IOException ex) {
-         DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
-      }
+        // Create and push Field2d to SmartDashboard.
+        m_field = new Field2d();
+        SmartDashboard.putData(m_field);
     }
 
     private double getDriverMoveFwdBack()
@@ -338,79 +340,6 @@ public class RobotContainer
     public boolean operatorDpadRight()
     {
         return ( operatorJoystick.getPOV() == 90 );
-    }
-
-
-    public Command getAutonomousCommand() 
-    {
-        // Simple path with holonomic rotation. Stationary start/end. Max velocity of 4 m/s and max accel of 3 m/s^2
-        PathPlannerTrajectory traj2 = PathPlanner.generatePath(
-            new PathConstraints(0.4,1),
-            // position, heading(direction of travel), holonomic rotation
-            new PathPoint(new Translation2d(14.74, 3.04), 
-                Rotation2d.fromDegrees(-70), Rotation2d.fromDegrees(0)), 
-            new PathPoint(new Translation2d(14.50, 2.19), 
-                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(0)), 
-            new PathPoint(new Translation2d(11.09, 2.13), 
-                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(0)),
-            new PathPoint(new Translation2d(10.47, 2.13), 
-                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180)),
-            new PathPoint(new Translation2d(10.18, 2.13), 
-                Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180))
-        );
-
-/*
- * red platform 
-1474 219 start against grid
-1109 213 past platform, lined up with cube/cone (begin turning)
-1047 213 in front of gamepiece (finish turning)
-1018 212 scoop up gamepiece
-1109 213 finish turning back around
-1267 213 drive back to center of platform
-
- */
-        // Create and push Field2d to SmartDashboard.
-        m_field = new Field2d();
-        SmartDashboard.putData(m_field);
-        
-        // Push the trajectory to Field2d.
-        m_field.getObject("traj").setTrajectory(traj2);
-
-        // 5. Add some init and wrap-up, and return everything
-        
-        return new SequentialCommandGroup(
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-            ScoreHighCmd(),
-            new WaitCommand(1.0),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            StowCmdHigh(),
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
-            new InstantCommand(() -> {
-                // Reset odometry for the first path you run during auto
-                swerveSubsystem.resetOdometry(traj2.getInitialHolonomicPose());
-                }),
-            new PPSwerveControllerCommand(
-                traj2, 
-                swerveSubsystem::getPose, // Pose supplier
-                DriveConstants.kDriveKinematics, // SwerveDriveKinematics
-                new PIDController(AutoConstants.kPXController, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                new PIDController(AutoConstants.kPYController, 0, 0), // Y controller (usually the same values as X controller)
-                new PIDController(AutoConstants.kPThetaController, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                swerveSubsystem::setModuleStates, // Module states consumer
-                true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
-                swerveSubsystem // Requires this drive subsystem
-            ),
-            new InstantCommand(() -> swerveSubsystem.stopModules())
-        );
-        /*
-        return new SequentialCommandGroup(
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-            ScoreHighCmd(),
-            new WaitCommand(1.0),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            StowCmdHigh()
-        );
-        */
     }
 
 
@@ -679,5 +608,61 @@ public class RobotContainer
                 )
             );
         }
+    }
+
+
+    void configureAutonomousCommands()
+    {
+        // Add commands to the autonomous command chooser
+        m_chooser.setDefaultOption("Auto Nothing", new WaitCommand(15.0) );
+        m_chooser.addOption("Charging", AutoChargingCmd());
+
+        // Put the chooser on the dashboard
+        SmartDashboard.putData(m_chooser);
+    }
+
+    public Command getAutonomousCommand() 
+    {
+        // return the selected Auton
+        // called by Robot.java / autonomousInit()
+        return m_chooser.getSelected();
+    }
+
+    private Command AutoChargingCmd()
+    {
+        // Load the PathPlanner path file and generate it with a max
+        // velocity and acceleration for every path in the group
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", new PathConstraints(3, 2));
+
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        //eventMap.put("intakeDown", new IntakeDown());
+
+        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+            swerveSubsystem::getPose, // Pose2d supplier
+            swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+            DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+            new PIDConstants(AutoConstants.kPXController, 0.0, 0.0), // PID constants to correct for translation error (used to create the X and Y PID controllers)
+            new PIDConstants(AutoConstants.kPThetaController, 0.0, 0.0), // PID constants to correct for rotation error (used to create the rotation controller)
+            swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
+            eventMap,
+            true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
+        );
+
+        Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
+
+        return new SequentialCommandGroup(
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(1.0),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            StowCmdHigh(),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            autoBuilderCommand
+        );
     }
  }
