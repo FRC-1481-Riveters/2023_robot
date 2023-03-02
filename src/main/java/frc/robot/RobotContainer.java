@@ -13,6 +13,7 @@ import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -135,6 +136,10 @@ public class RobotContainer
         // Create and push Field2d to SmartDashboard.
         m_field = new Field2d();
         SmartDashboard.putData(m_field);
+
+        // FIXME MUST NOT BE ENABLED WITH FMS!!!
+        // FIXME DISABLE THIS BEFORE COMPETITION!
+        PathPlannerServer.startServer(5811); // 5811 = port number. adjust this according to your needs
     }
 
     private double getDriverMoveFwdBack()
