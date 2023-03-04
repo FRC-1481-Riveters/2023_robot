@@ -72,6 +72,10 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putData("Field", m_field);
     }
 
+    public double getPitch(){
+        return gyro.getPitch();
+    }
+
     public void zeroHeading() {
         gyro.setAccumZAngle(0); //.setFusedHeading(0);
         gyro.setYaw(0);

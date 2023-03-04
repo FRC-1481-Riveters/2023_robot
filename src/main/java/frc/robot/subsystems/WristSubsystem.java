@@ -59,11 +59,15 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configContinuousCurrentLimit(10, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
-        m_wristMotor.selectProfileSlot(0, 0);
+        m_wristMotor.config_kF(1, WristConstants.WRIST_MOTOR_KF_STOW, WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.config_kP(1, kP.getDouble(WristConstants.WRIST_MOTOR_KP_STOW), WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.config_kI(1, kI.getDouble(WristConstants.WRIST_MOTOR_KI_STOW), WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.config_kD(1, kD.getDouble(WristConstants.WRIST_MOTOR_KD_STOW), WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.config_kF(0, WristConstants.WRIST_MOTOR_KF, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.config_kP(0, kP.getDouble(WristConstants.WRIST_MOTOR_KP), WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.config_kI(0, kI.getDouble(WristConstants.WRIST_MOTOR_KI), WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.config_kD(0, kD.getDouble(WristConstants.WRIST_MOTOR_KD), WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.selectProfileSlot(0, 0);
         // Set acceleration and cruise velocity
         m_wristMotor.configMotionCruiseVelocity(WristConstants.WRIST_MOTOR_CRUISE, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configMotionAcceleration(WristConstants.WRIST_MOTOR_ACCELERATION, WristConstants.TALON_TIMEOUT_MS);
@@ -90,6 +94,16 @@ public class WristSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         wristPosition = value;
+        if( value > WristConstants.WRIST_POSITION_BOUNCY )
+        {
+            System.out.println("wrist setPosition: using PID slot 1 for pos " + value);
+            m_wristMotor.selectProfileSlot(1, 0);
+        }
+        else
+        {
+            System.out.println("wrist setPosition: using PID slot 0 for pos " + value);
+            m_wristMotor.selectProfileSlot(0, 0);
+        }
         m_wristMotor.setIntegralAccumulator(0);
         m_wristMotor.set(ControlMode.MotionMagic, value);
         nt_wrist_set.setDouble( wristPosition );

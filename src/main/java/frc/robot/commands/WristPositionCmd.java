@@ -21,8 +21,18 @@ public class WristPositionCmd extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    double position;
     System.out.println( "WristPositionCmd to " + m_setPosition + ", current " + m_wristSubsystem.getPosition());
+    m_wristSubsystem.setWrist(0);
+    position = m_wristSubsystem.getPosition();
     m_wristSubsystem.setPosition(m_setPosition);
+    if( m_wristSubsystem.atPosition() == false )
+    {
+      if( position < m_setPosition )
+        m_wristSubsystem.setWrist(1.0);
+      else
+        m_wristSubsystem.setWrist(-1.0);
+    }
   }
 
   // Returns true when the command should end.
@@ -30,11 +40,6 @@ public class WristPositionCmd extends CommandBase {
   public boolean isFinished() {
       if( m_wristSubsystem.atPosition() || m_waitAtPosition == false)
       {
-        if (m_setPosition == WristConstants.WRIST_POSITION_STOWED )
-        {
-          m_wristSubsystem.setWrist(0);
-        }
-        System.out.println("WristPositionCmd " + m_setPosition + " done");
         return true;
       }
       else
@@ -45,6 +50,15 @@ public class WristPositionCmd extends CommandBase {
 
   @Override
   public void end( boolean interrupted ) {
-    m_wristSubsystem.setPosition(m_setPosition);
-  }
+    if (m_setPosition < WristConstants.WRIST_POSITION_BOUNCY )
+    {
+      m_wristSubsystem.setPosition(m_setPosition); 
+      System.out.println("WristPositionCmd " + m_setPosition + " done, now PID");
+    }
+    else
+    {
+      m_wristSubsystem.setWrist(0);
+      System.out.println("WristPositionCmd " + m_setPosition + " done, now0");
+    }
+}
 }

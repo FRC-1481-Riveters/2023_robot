@@ -148,5 +148,18 @@
   "maxVelocity": 3.0,
   "maxAcceleration": 2.0,
   "isReversed": null,
-  "markers": []
+  "markers": [
+    {
+      "position": 0.8636363636363611,
+      "names": [
+        "LoadLow"
+      ]
+    },
+    {
+      "position": 4.318181818181813,
+      "names": [
+        "ScoreHigh2"
+      ]
+    }
+  ]
 }

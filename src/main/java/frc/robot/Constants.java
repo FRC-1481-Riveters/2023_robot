@@ -79,6 +79,10 @@ public final class Constants {
                 kPhysicalMaxAngularSpeedRadiansPerSecond;
         public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 6;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 6;
+
+        public static final double CreepLoading = -0.37;
+        public static final double CreepBalance = 0.3;
+
     }
 
     public static final class AutoConstants {
@@ -120,8 +124,8 @@ public final class Constants {
         public static final int SHOULDER_POSITION_LEVEL = 1911;
         public static final int SHOULDER_POSITION_DOWN = 2935;
         public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = 2150;
-        public static final int SHOULDER_POSITION_CONE_PICKUP = 2366;
-        public static final int SHOULDER_POSITION_CUBE_PICKUP = 2366;
+        public static final int SHOULDER_POSITION_CONE_PICKUP = 2527;
+        public static final int SHOULDER_POSITION_CUBE_PICKUP = 2527;
         public static final int SHOULDER_POSITION_STOWED = 2579;
         public static final double SHOULDER_TOLERANCE = 60;
         public static final int TALON_TIMEOUT_MS = 5000;
@@ -135,9 +139,13 @@ public final class Constants {
         public static final double WRIST_MOTOR_KP = 9.0;
         public static final double WRIST_MOTOR_KI = 0.03;
         public static final double WRIST_MOTOR_KD = 1.2;
+        public static final double WRIST_MOTOR_KF_STOW = 0.0;
+        public static final double WRIST_MOTOR_KP_STOW = 1.0;
+        public static final double WRIST_MOTOR_KI_STOW = 0.0;
+        public static final double WRIST_MOTOR_KD_STOW = 0.0;
         public static final double WRIST_MOTOR_CRUISE = 1000;
         public static final double WRIST_MOTOR_ACCELERATION = 400;
-        public static final int WRIST_POSITION_MIN = 205;
+        public static final int WRIST_POSITION_MIN = 46;
         public static final int WRIST_POSITION_MAX = 1967;
         public static final int WRIST_POSITION_TEST_85 = 469;
         public static final int WRIST_POSITION_TEST_15 = 1702;
@@ -148,9 +156,10 @@ public final class Constants {
         public static final int WRIST_POSITION_MID = 834;    
         public static final int WRIST_POSITION_LOW = 441; 
         public static final int WRIST_POSITION_STRAIGHT = 952;
+        public static final int WRIST_POSITION_BOUNCY = 1200;
         public static final int WRIST_POSITION_STOWED = 1550;
-        public static final int WRIST_POSITION_CONE_PICKUP = 396;
-        public static final int WRIST_POSITION_CUBE_PICKUP = 205;
+        public static final int WRIST_POSITION_CONE_PICKUP = 46;
+        public static final int WRIST_POSITION_CUBE_PICKUP = 215;
 
         public static final int TALON_TIMEOUT_MS = 5000;
     }
@@ -177,8 +186,8 @@ public final class Constants {
         public static final int EXTEND_POSITION_HIGH = 17247;   
         public static final int EXTEND_POSITION_MID = 3925;   
         public static final int EXTEND_POSITION_LOW = 0;
-        public static final int EXTEND_POSITION_CONE_PICKUP = 5710;   
-        public static final int EXTEND_POSITION_CUBE_PICKUP = 8700;   
+        public static final int EXTEND_POSITION_CONE_PICKUP = 4029;   
+        public static final int EXTEND_POSITION_CUBE_PICKUP = 4029;   
         public static final int EXTEND_TOLERANCE = 200;
         public static final int TALON_TIMEOUT_MS = 5000;
     }

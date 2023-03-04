@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.w3c.dom.css.RGBColor;
+
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
@@ -15,6 +17,8 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -69,6 +73,7 @@ import frc.robot.commands.ShoulderPositionCmd;
 import frc.robot.commands.WristJogDownCmd;
 import frc.robot.commands.WristJogUpCmd;
 import frc.robot.commands.WristPositionCmd;
+import frc.robot.commands.BalanceWaitLevelCmd;
 import frc.robot.commands.ExtendJogInCmd;
 import frc.robot.commands.ExtendJogOutCmd;
 import frc.robot.commands.ExtendPositionCmd;
@@ -108,16 +113,29 @@ public class RobotContainer
     GamepadAxisButton m_operatorDpadRight;
     GamepadAxisButton m_driverLT, m_driverRT;
 
-    boolean m_bCreep=false;
+    double m_dCreep=0;
 
     // A chooser for autonomous commands
     SendableChooser<Command> m_chooser = new SendableChooser<>();
 
+    AddressableLED m_led;
+    AddressableLEDBuffer m_ledBuffer;
 
     public RobotContainer() 
     {
         DigitalInput input;
+        m_led = new AddressableLED(0);
 
+        // Reuse buffer
+        // Default to a length of 60, start empty output
+        // Length is expensive to set, so only set it once, then just update data
+        m_ledBuffer = new AddressableLEDBuffer(60);
+        m_led.setLength(m_ledBuffer.getLength());
+
+        // Set the data
+        m_led.setData(m_ledBuffer);
+        m_led.start();
+        
         input = new DigitalInput(9);
         isPracticeRobot = !input.get();
         input.close();
@@ -142,13 +160,25 @@ public class RobotContainer
         PathPlannerServer.startServer(5811); // 5811 = port number. adjust this according to your needs
     }
 
+    private void setBling( int red, int green, int blue )
+    {
+        int i;
+        for( i=0; i<m_ledBuffer.getLength(); i++ )
+        {
+            m_ledBuffer.setRGB(i, red, green, blue);
+        }
+        // Set the data
+        m_led.setData(m_ledBuffer);
+        m_led.start();
+    }
+
     private double getDriverMoveFwdBack()
     {
         // Handle creeping forward if the driver is pressing D-pad up
         double pos;
-        if( m_bCreep == true )
+        if( m_dCreep != 0 )
             // Use a fixed value to creep forward
-            pos = -0.37;
+            pos = m_dCreep;
         else
             // Use the joystick axis
             pos = driverJoystick.getRawAxis(OIConstants.kDriverYAxis) / driveDivider;
@@ -158,7 +188,7 @@ public class RobotContainer
     private double getDriverMoveLeftRight()
     {
         double pos;
-        if( m_bCreep == true )
+        if( m_dCreep != 0 )
             pos = 0;
         else
             pos = driverJoystick.getRawAxis(OIConstants.kDriverXAxis) / driveDivider;
@@ -168,7 +198,7 @@ public class RobotContainer
     private double getDriverRotate()
     {
         double pos;
-        if( m_bCreep == true )
+        if( m_dCreep != 0 )
             pos = 0;
         else
             pos = driverJoystick.getRawAxis(OIConstants.kDriverRotAxis) / driveDivider;
@@ -180,9 +210,10 @@ public class RobotContainer
         driveDivider = divider;
     }
     
-    private void setCreep(boolean bCreep )
+    public void setCreep( double value )
     {
-        m_bCreep = bCreep;
+        m_dCreep = value;
+        System.out.println("setCreep " + value);
     }
 
     private void configureButtonBindings() 
@@ -227,10 +258,10 @@ public class RobotContainer
         m_driverDpadUp = new GamepadAxisButton(this::driverDpadUp);
         m_driverDpadUp
             .onTrue( new SequentialCommandGroup(
-                new InstantCommand( ()-> setCreep(true) ),
+                new InstantCommand( ()-> setCreep(DriveConstants.CreepLoading) ),
                 new InstantCommand( () -> swerveSubsystem.zeroHeading() )
             ) )
-            .onFalse( new InstantCommand( ()-> setCreep(false) ) );
+            .onFalse( new InstantCommand( ()-> setCreep(0) ) );
     
 
         new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
@@ -249,6 +280,7 @@ public class RobotContainer
         m_operatorDpadLeft.onTrue(
             new SequentialCommandGroup(
                 new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+                new InstantCommand( ()->setBling( 255,255, 0 ) ),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 1.0) ),
                 new WaitCommand(0.5),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 0.0) )
@@ -258,6 +290,7 @@ public class RobotContainer
         m_operatorDpadRight.onTrue( 
             new SequentialCommandGroup(
                 new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+                new InstantCommand( ()->setBling( 255,0, 255 ) ),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kRightRumble, 1.0) ),
                 new WaitCommand(0.5),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kRightRumble, 0.0) )
@@ -620,7 +653,9 @@ public class RobotContainer
     {
         // Add commands to the autonomous command chooser
         m_chooser.setDefaultOption("Auto Nothing", new WaitCommand(15.0) );
-        m_chooser.addOption("Charging", AutoChargingCmd());
+        m_chooser.addOption("Balance", AutoChargingCmd());
+        m_chooser.addOption("Inner", AutoInnerCmd());
+        m_chooser.addOption("Outer", AutoOuterCmd());
 
         // Put the chooser on the dashboard
         SmartDashboard.putData(m_chooser);
@@ -637,7 +672,8 @@ public class RobotContainer
     {
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
-        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", new PathConstraints(3, 2));
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", 
+            new PathConstraints(0.5, 2));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
@@ -666,7 +702,94 @@ public class RobotContainer
             new WaitCommand(1.0),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             StowCmdHigh(),
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            autoBuilderCommand,
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalance) ),
+            new BalanceWaitLevelCmd(swerveSubsystem)
+                .deadlineWith(
+                    new SwerveJoystickCmd(
+                        swerveSubsystem,
+                        () -> getDriverMoveFwdBack(),
+                        () -> getDriverMoveLeftRight(),
+                        () -> getDriverRotate(),
+                        () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                    )
+                ),
+            new InstantCommand( ()->setCreep(0) )
+        );
+    }
+
+    private Command AutoInnerCmd()
+    {
+        // Load the PathPlanner path file and generate it with a max
+        // velocity and acceleration for every path in the group
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Inner", 
+            new PathConstraints(3, 2));
+
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        //eventMap.put("intakeDown", new IntakeDown());
+
+        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+            swerveSubsystem::getPose, // Pose2d supplier
+            swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+            DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+            new PIDConstants(AutoConstants.kPXController, 0.0, 0.0), // PID constants to correct for translation error (used to create the X and Y PID controllers)
+            new PIDConstants(AutoConstants.kPThetaController, 0.0, 0.0), // PID constants to correct for rotation error (used to create the rotation controller)
+            swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
+            eventMap,
+            true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
+        );
+
+        Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
+
+        return new SequentialCommandGroup(
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(1.0),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            StowCmdHigh(),
+            autoBuilderCommand
+        );
+    }
+
+    private Command AutoOuterCmd()
+    {
+        // Load the PathPlanner path file and generate it with a max
+        // velocity and acceleration for every path in the group
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Outer", 
+            new PathConstraints(3, 2));
+
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        //eventMap.put("intakeDown", new IntakeDown());
+
+        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+            swerveSubsystem::getPose, // Pose2d supplier
+            swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+            DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+            new PIDConstants(AutoConstants.kPXController, 0.0, 0.0), // PID constants to correct for translation error (used to create the X and Y PID controllers)
+            new PIDConstants(AutoConstants.kPThetaController, 0.0, 0.0), // PID constants to correct for rotation error (used to create the rotation controller)
+            swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
+            eventMap,
+            true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
+        );
+
+        Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
+
+        return new SequentialCommandGroup(
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(1.0),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            StowCmdHigh(),
             autoBuilderCommand
         );
     }

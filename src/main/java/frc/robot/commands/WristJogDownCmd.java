@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.WristSubsystem;
+import frc.robot.Constants.WristConstants;
 
 public class WristJogDownCmd extends CommandBase {
 
@@ -34,8 +35,10 @@ public class WristJogDownCmd extends CommandBase {
   @Override
   public void end(boolean interrupted)
   {
-    //m_wristSubsystem.setWrist(0);
-    m_wristSubsystem.setPosition( m_wristSubsystem.getPosition() );
+    if( m_wristSubsystem.getPosition() < WristConstants.WRIST_POSITION_BOUNCY )
+      m_wristSubsystem.setPosition( m_wristSubsystem.getPosition() );
+    else
+      m_wristSubsystem.setWrist(0);
   }
 
   // Returns true when the command should end.
