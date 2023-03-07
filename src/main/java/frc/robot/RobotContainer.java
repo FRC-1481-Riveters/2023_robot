@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.lang.model.util.ElementScanner14;
+
 import org.w3c.dom.css.RGBColor;
 
 import com.pathplanner.lib.PathConstraints;
@@ -118,8 +120,8 @@ public class RobotContainer
     // A chooser for autonomous commands
     SendableChooser<Command> m_chooser = new SendableChooser<>();
 
-    AddressableLED m_led;
-    AddressableLEDBuffer m_ledBuffer;
+    public AddressableLED m_led;
+    public AddressableLEDBuffer m_ledBuffer;
 
     public RobotContainer() 
     {
@@ -131,6 +133,11 @@ public class RobotContainer
         // Length is expensive to set, so only set it once, then just update data
         m_ledBuffer = new AddressableLEDBuffer(60);
         m_led.setLength(m_ledBuffer.getLength());
+
+        for (var i = 0; i < m_ledBuffer.getLength(); i++) {
+            // Sets the specified LED to the RGB values for red
+            m_ledBuffer.setRGB(i, 255, 0, 0);
+        }
 
         // Set the data
         m_led.setData(m_ledBuffer);
@@ -397,7 +404,9 @@ public class RobotContainer
                     // Pull EXTEND all the way in
                     new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
                     // Pull SHOULDER all the way down
-                    new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true)
+                    new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true),
+                    new InstantCommand( ()-> wristSubsystem.setPosition(WristConstants.WRIST_POSITION_STOWED) ),
+                    new WaitCommand(1.0)
                 )
             ),
             new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
@@ -423,7 +432,9 @@ public class RobotContainer
                 // Once WRIST is almost all the way in, start moving SHOULDER down
                 new SequentialCommandGroup(
                     new WristWaitPositionCmd(wristSubsystem, true, WristConstants.WRIST_POSITION_STOWED - 300),
-                    new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true)
+                    new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true),
+                    new InstantCommand( ()->wristSubsystem.setPosition(WristConstants.WRIST_POSITION_STOWED) ),
+                    new WaitCommand(1.0)
                 )
             ),
             new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
@@ -673,7 +684,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", 
-            new PathConstraints(0.5, 2));
+            new PathConstraints(0.8, 2));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
@@ -697,12 +708,15 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
-            new WaitCommand(1.0),
+            new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            StowCmdHigh(),
-            autoBuilderCommand,
+            new ParallelCommandGroup(
+                StowCmdHigh(),
+                autoBuilderCommand
+            ),
             new InstantCommand( ()->setCreep(DriveConstants.CreepBalance) ),
             new BalanceWaitLevelCmd(swerveSubsystem)
                 .deadlineWith(
@@ -747,9 +761,10 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
-            new WaitCommand(1.0),
+            new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             StowCmdHigh(),
             autoBuilderCommand
@@ -761,13 +776,28 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Outer", 
-            new PathConstraints(3, 2));
+            new PathConstraints(2, 1));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
         //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
         //eventMap.put("intakeDown", new IntakeDown());
+        eventMap.put("LoadLow", 
+            new SequentialCommandGroup(
+                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(1.0),
+                StowCmdLow()
+            )
+        );
+
+        eventMap.put("ScoreHigh2",
+            new SequentialCommandGroup(
+                ScoreHighCmd(),
+                new WaitCommand(0.5),
+                new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
+                StowCmdHigh()
+            )
+        );
 
         // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
         SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
@@ -785,11 +815,13 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
-            new WaitCommand(1.0),
+            new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            StowCmdHigh(),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+            FloorLoadCubeCmd(),
             autoBuilderCommand
         );
     }

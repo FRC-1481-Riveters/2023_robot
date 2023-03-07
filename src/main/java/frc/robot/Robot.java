@@ -11,6 +11,8 @@ import frc.robot.subsystems.ShoulderSubsystem;
 import frc.robot.subsystems.ExtendSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,6 +27,8 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private RobotContainer m_robotContainer;
+
+    private int m_rainbowFirstPixelHue;
 
     /**
      * This function is run when the robot is first started up and should be used
@@ -78,6 +82,20 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
+        int i;
+        for( i=0; i < m_robotContainer.m_ledBuffer.getLength(); i++ )
+        {
+            //Calculate the hue - hue is easier for rainbows because the color
+            //shape is a circle so only one value needs to process
+            final var hue = (m_rainbowFirstPixelHue + (i * 180 / m_robotContainer.m_ledBuffer.getLength())) % 180;
+            //Set the value
+            m_robotContainer.m_ledBuffer.setHSV(i, hue, 255, 128);
+        }
+        m_robotContainer.m_led.setData(m_robotContainer.m_ledBuffer);
+        //Increase by to make the rainbow "move"
+        m_rainbowFirstPixelHue += 3;
+        //Check bounds
+        m_rainbowFirstPixelHue %= 180;
     }
 
     /**

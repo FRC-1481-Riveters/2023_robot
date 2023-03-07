@@ -60,7 +60,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private final Field2d m_field = new Field2d();
 
-
     public SwerveSubsystem() {
         new Thread(() -> {
             try {
@@ -129,4 +128,5 @@ public class SwerveSubsystem extends SubsystemBase {
         backLeft.setDesiredState(desiredStates[2]);
         backRight.setDesiredState(desiredStates[3]);
     }
+
 }

@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
 import java.util.function.Supplier;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -15,6 +17,11 @@ public class SwerveJoystickCmd extends CommandBase {
     private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdFunction;
     private final Supplier<Boolean> fieldOrientedFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
+
+    private PIDController driftCorrectionPID = new PIDController(0.07, 0.00, 0.004);
+
+    private double pXY = 0;
+    private double desiredHeading;
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
             Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turningSpdFunction,
@@ -89,7 +96,15 @@ public class SwerveJoystickCmd extends CommandBase {
             // Relative to robot
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
         }
-
+/*
+        //counters the drift in our robot due to uneven frame
+        double xy = Math.abs(chassisSpeeds.vxMetersPerSecond) + Math.abs(chassisSpeeds.vyMetersPerSecond);
+        if(Math.abs(chassisSpeeds.omegaRadiansPerSecond) > 0.0 || pXY <= 0) 
+            desiredHeading = swerveSubsystem.getPose().getRotation().getDegrees();
+        else if(xy > 0)
+            chassisSpeeds.omegaRadiansPerSecond += driftCorrectionPID.calculate(swerveSubsystem.getPose().getRotation().getDegrees(), desiredHeading);
+        pXY = xy;
+*/
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
 
@@ -106,4 +121,5 @@ public class SwerveJoystickCmd extends CommandBase {
     public boolean isFinished() {
         return false;
     }
+
 }
