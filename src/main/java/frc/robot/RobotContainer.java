@@ -93,8 +93,8 @@ public class RobotContainer
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
 
-    private final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
-    private final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
+    public final XboxController driverJoystick = new XboxController(OIConstants.kDriverControllerPort);
+    public final XboxController operatorJoystick = new XboxController(OIConstants.kOperatorControllerPort);
 
     private boolean isPracticeRobot;
 
@@ -220,6 +220,9 @@ public class RobotContainer
     public void setCreep( double value )
     {
         m_dCreep = value;
+//        if( DriverStation.getAlliance() == DriverStation.Alliance.Blue )
+//            m_dCreep = -m_dCreep;
+
         System.out.println("setCreep " + value);
     }
 
@@ -287,7 +290,7 @@ public class RobotContainer
         m_operatorDpadLeft.onTrue(
             new SequentialCommandGroup(
                 new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-                new InstantCommand( ()->setBling( 255,255, 0 ) ),
+                new InstantCommand( ()->setBling( 255,130, 0 ) ),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 1.0) ),
                 new WaitCommand(0.5),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 0.0) )
@@ -577,6 +580,20 @@ public class RobotContainer
         );
     }
 
+    public Command FloorLoadConeFromHighCmd()
+    {
+        return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("FloorLoadConeFromHighCmd") ),
+            // Move WRIST to CONE PICKUP
+            new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_CONE_PICKUP, true),
+            new ParallelCommandGroup (
+                new InstantCommand( ()->wristSubsystem.setWrist(0) ),         
+                // Move SHOULDER to CONE PICKUP
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_CONE_PICKUP, true)
+            )
+        );
+    }
+
     public Command FloorLoadConeCmd()
     {
         return new SequentialCommandGroup(
@@ -590,6 +607,7 @@ public class RobotContainer
             new ParallelCommandGroup (
                 // Move EXTEND to CONE PICKUP
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CONE_PICKUP, true),
+                new InstantCommand( ()->wristSubsystem.setWrist(0) ),         
                 // Move SHOULDER to CONE PICKUP
                 new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_CONE_PICKUP, true)
             )
@@ -609,6 +627,7 @@ public class RobotContainer
             new ParallelCommandGroup (
                 // Move EXTEND to CUBE PICKUP
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CUBE_PICKUP, true),
+                new InstantCommand( ()->wristSubsystem.setWrist(0) ),         
                 // Move SHOULDER to CUBE PICKUP
                 new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_CUBE_PICKUP, true)
             )
@@ -684,7 +703,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", 
-            new PathConstraints(0.8, 2));
+            new PathConstraints(0.6, 2));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
@@ -737,13 +756,31 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Inner", 
-            new PathConstraints(3, 2));
+            new PathConstraints(3.5, 1.3));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
-        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
-        //eventMap.put("intakeDown", new IntakeDown());
+        eventMap.put("FloorLoad",
+            new SequentialCommandGroup(
+                new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+                FloorLoadConeFromHighCmd()
+            )
+        );
+
+        eventMap.put("LoadLow", 
+            new SequentialCommandGroup(
+                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(2.0),
+                StowCmdLow()
+            )
+        );
+
+//        eventMap.put("ScoreHigh2",
+//            new SequentialCommandGroup(
+//                new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
+//                StowCmdHigh()
+//            )
+//        );
 
         // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
         SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
@@ -766,8 +803,11 @@ public class RobotContainer
             ScoreHighCmd(),
             new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            StowCmdHigh(),
-            autoBuilderCommand
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            // Move EXTEND to CONE PICKUP
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CONE_PICKUP, true),
+            autoBuilderCommand,
+            ScoreLowCmd()
         );
     }
 
@@ -781,8 +821,7 @@ public class RobotContainer
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
-        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
-        //eventMap.put("intakeDown", new IntakeDown());
+
         eventMap.put("LoadLow", 
             new SequentialCommandGroup(
                 new IntakeJogCmd( intakeSubsystem, true ).withTimeout(1.0),

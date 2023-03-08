@@ -80,8 +80,8 @@ public final class Constants {
         public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 6;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 6;
 
-        public static final double CreepLoading = 0.37;
-        public static final double CreepBalance = 0.31;
+        public static final double CreepLoading = -0.37;
+        public static final double CreepBalance = 0.30;
 
     }
 
