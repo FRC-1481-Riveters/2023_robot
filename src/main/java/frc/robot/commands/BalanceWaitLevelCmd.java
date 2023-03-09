@@ -22,7 +22,7 @@ private SwerveSubsystem m_Subsystem;
     // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (m_Subsystem.getPitch() < 3.0){
+    if (Math.abs(m_Subsystem.getPitch()) < 3.5){
       System.out.println("BalanceWaitLevelCmd finished"); 
       return true;
     }

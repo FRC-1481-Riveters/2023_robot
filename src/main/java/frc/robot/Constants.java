@@ -82,6 +82,7 @@ public final class Constants {
 
         public static final double CreepLoading = -0.37;
         public static final double CreepBalance = 0.30;
+        public static final double CreepBalanceMobility = -0.35;
 
     }
 
@@ -186,6 +187,7 @@ public final class Constants {
         public static final int EXTEND_POSITION_HIGH = 17247;   
         public static final int EXTEND_POSITION_MID = 3925;   
         public static final int EXTEND_POSITION_LOW = 0;
+        public static final int EXTEND_POSITION_SCORE_LOW = 1800;
         public static final int EXTEND_POSITION_CONE_PICKUP = 4029;   
         public static final int EXTEND_POSITION_CUBE_PICKUP = 4029;   
         public static final int EXTEND_TOLERANCE = 200;

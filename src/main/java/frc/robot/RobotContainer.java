@@ -290,7 +290,7 @@ public class RobotContainer
         m_operatorDpadLeft.onTrue(
             new SequentialCommandGroup(
                 new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-                new InstantCommand( ()->setBling( 255,130, 0 ) ),
+                new InstantCommand( ()->setBling( 255,120, 0 ) ),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 1.0) ),
                 new WaitCommand(0.5),
                 new InstantCommand( ()-> operatorJoystick.setRumble(RumbleType.kLeftRumble, 0.0) )
@@ -530,8 +530,8 @@ public class RobotContainer
             new ParallelCommandGroup(
                 // Move SHOULDER to LOW
                 new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_LOW, true),
-                // Move EXTEND to LOW
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_LOW, true)
+                // Move EXTEND to SCORE LOW
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SCORE_LOW, true)
             )
         );
     }
@@ -683,7 +683,8 @@ public class RobotContainer
     {
         // Add commands to the autonomous command chooser
         m_chooser.setDefaultOption("Auto Nothing", new WaitCommand(15.0) );
-        m_chooser.addOption("Balance", AutoChargingCmd());
+        m_chooser.addOption("Balance", AutoBalanceCmd() );
+        m_chooser.addOption("Balance + Mobility", AutoBalanceMobilityCmd());
         m_chooser.addOption("Inner", AutoInnerCmd());
         m_chooser.addOption("Outer", AutoOuterCmd());
 
@@ -698,7 +699,7 @@ public class RobotContainer
         return m_chooser.getSelected();
     }
 
-    private Command AutoChargingCmd()
+    private Command AutoBalanceCmd()
     {
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
@@ -747,6 +748,70 @@ public class RobotContainer
                         () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                     )
                 ),
+            new InstantCommand( ()->setCreep(0) )
+        );
+    }
+
+    private Command AutoBalanceMobilityCmd()
+    {
+        // Load the PathPlanner path file and generate it with a max
+        // velocity and acceleration for every path in the group
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance + Mobility", 
+            new PathConstraints(0.8, 1.5));
+
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        //eventMap.put("intakeDown", new IntakeDown());
+
+        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+            swerveSubsystem::getPose, // Pose2d supplier
+            swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+            DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+            new PIDConstants(AutoConstants.kPXController, 0.0, 0.0), // PID constants to correct for translation error (used to create the X and Y PID controllers)
+            new PIDConstants(AutoConstants.kPThetaController, 0.0, 0.0), // PID constants to correct for rotation error (used to create the rotation controller)
+            swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
+            eventMap,
+            true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
+        );
+
+        Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
+
+        return new SequentialCommandGroup(
+            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            ScoreHighCmd(),
+            new WaitCommand(0.5),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            new ParallelCommandGroup(
+                StowCmdHigh(),
+                autoBuilderCommand
+            ),
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility) ),
+            new BalanceWaitLevelCmd(swerveSubsystem)
+                .deadlineWith(
+                    new SwerveJoystickCmd(
+                        swerveSubsystem,
+                        () -> getDriverMoveFwdBack(),
+                        () -> getDriverMoveLeftRight(),
+                        () -> getDriverRotate(),
+                        () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                    )
+                ),
+            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility) ),
+            new WaitCommand(0.25)
+            .deadlineWith(
+                new SwerveJoystickCmd(
+                    swerveSubsystem,
+                    () -> getDriverMoveFwdBack(),
+                    () -> getDriverMoveLeftRight(),
+                    () -> getDriverRotate(),
+                    () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                )
+            ),
             new InstantCommand( ()->setCreep(0) )
         );
     }
