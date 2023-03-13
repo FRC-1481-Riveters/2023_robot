@@ -174,4 +174,8 @@ public class SwerveModule {
         driveMotor.set( ControlMode.PercentOutput, 0 );
         turningMotor.set( ControlMode.PercentOutput, 0 );
     }
+
+    public void setRampRate(double rampSeconds){
+        driveMotor.configOpenloopRamp(rampSeconds);
+    }
 }
