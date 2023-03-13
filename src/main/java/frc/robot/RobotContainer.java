@@ -268,10 +268,14 @@ public class RobotContainer
         m_driverDpadUp = new GamepadAxisButton(this::driverDpadUp);
         m_driverDpadUp
             .onTrue( new SequentialCommandGroup(
+                new InstantCommand( ()-> swerveSubsystem.setRampRate(0.25)),
                 new InstantCommand( ()-> setCreep(DriveConstants.CreepLoading) ),
                 new InstantCommand( () -> swerveSubsystem.zeroHeading() )
             ) )
-            .onFalse( new InstantCommand( ()-> setCreep(0) ) );
+            .onFalse( new SequentialCommandGroup(
+                new InstantCommand ( ()-> swerveSubsystem.setRampRate(0)),
+                new InstantCommand( ()-> setCreep(0) ) 
+            ));
     
 
         new JoystickButton(operatorJoystick, XboxController.Button.kStart.value).whenPressed(() -> extendSubsystem.zeroPosition());
@@ -543,7 +547,7 @@ public class RobotContainer
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ParallelCommandGroup (
                 // Move SHOULDER to SHELF
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF, true),
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, true),
                 new SequentialCommandGroup(
                     // Wait for SHOULDER to be above bumper
                     new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
@@ -565,7 +569,7 @@ public class RobotContainer
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             new ParallelCommandGroup (
                 // Move SHOULDER to SHELF
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF, true),
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, true),
                 new SequentialCommandGroup(
                     // Wait for SHOULDER to be above bumper
                     new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
@@ -704,7 +708,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance", 
-            new PathConstraints(0.6, 2));
+            new PathConstraints(0.55, 2));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
@@ -737,7 +741,7 @@ public class RobotContainer
                 StowCmdHigh(),
                 autoBuilderCommand
             ),
-            new InstantCommand( ()->setCreep(DriveConstants.CreepBalance) ),
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalance * 0.8) ),
             new BalanceWaitLevelCmd(swerveSubsystem)
                 .deadlineWith(
                     new SwerveJoystickCmd(
@@ -748,6 +752,17 @@ public class RobotContainer
                         () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                     )
                 ),
+            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
+            new WaitCommand(0.25)
+            .deadlineWith(
+                new SwerveJoystickCmd(
+                    swerveSubsystem,
+                    () -> getDriverMoveFwdBack(),
+                    () -> getDriverMoveLeftRight(),
+                    () -> getDriverRotate(),
+                    () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                )
+            ),
             new InstantCommand( ()->setCreep(0) )
         );
     }
@@ -757,7 +772,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance + Mobility", 
-            new PathConstraints(0.8, 1.5));
+            new PathConstraints(0.8, 2.2));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.

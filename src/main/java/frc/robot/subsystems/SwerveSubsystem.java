@@ -129,4 +129,11 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(desiredStates[3]);
     }
 
+    public void setRampRate(double rampSeconds){
+        frontLeft.setRampRate(rampSeconds);
+        frontRight.setRampRate(rampSeconds);
+        backLeft.setRampRate(rampSeconds);
+        backRight.setRampRate(rampSeconds);
+    }
+
 }
