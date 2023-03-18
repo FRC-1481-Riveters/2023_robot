@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -90,21 +91,19 @@ public class SwerveJoystickCmd extends CommandBase {
         ChassisSpeeds chassisSpeeds;
         if (fieldOrientedFunction.get()) {
             // Relative to field
+            // - correct for swerve drift... this snippet stolen from Chief Delphi
+            // https://www.chiefdelphi.com/t/field-relative-swervedrive-drift-even-with-simulated-perfect-modules/413892
+            double gyroRate = swerveSubsystem.getRate() * 0; //0.06;
+            Rotation2d correctedRotation = 
+                swerveSubsystem.getPose().getRotation().minus(new Rotation2d(gyroRate));
+
             chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d());
+                    xSpeed, ySpeed, turningSpeed, correctedRotation);
         } else {
             // Relative to robot
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
         }
-/*
-        //counters the drift in our robot due to uneven frame
-        double xy = Math.abs(chassisSpeeds.vxMetersPerSecond) + Math.abs(chassisSpeeds.vyMetersPerSecond);
-        if(Math.abs(chassisSpeeds.omegaRadiansPerSecond) > 0.0 || pXY <= 0) 
-            desiredHeading = swerveSubsystem.getPose().getRotation().getDegrees();
-        else if(xy > 0)
-            chassisSpeeds.omegaRadiansPerSecond += driftCorrectionPID.calculate(swerveSubsystem.getPose().getRotation().getDegrees(), desiredHeading);
-        pXY = xy;
-*/
+
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
 

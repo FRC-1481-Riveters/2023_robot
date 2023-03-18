@@ -239,11 +239,11 @@ public class RobotContainer
            .whenReleased(() -> DriveSlowDividerSet(1.5));
         
         new JoystickButton(operatorJoystick, XboxController.Button.kY.value)
-            .whileTrue( ScoreHighCmd()
+            .whileTrue( ScoreHighProCmd()
             .finallyDo( this::RumbleConfirm )
             );
         new JoystickButton(operatorJoystick, XboxController.Button.kB.value)
-            .whileTrue( ScoreMidCmd() 
+            .whileTrue( ScoreMidProCmd() 
             .finallyDo( this::RumbleConfirm )
             );
         new JoystickButton(operatorJoystick, XboxController.Button.kA.value)
@@ -480,6 +480,35 @@ public class RobotContainer
         );
     }
 
+    public Command ScoreHighProCmd(){
+        return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ScoreHighProCmd") ),
+            new ParallelCommandGroup(
+                // Pull game piece in a little IF IT IS A CONE
+                new ConditionalCommand(
+                    new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                    new WaitCommand(0),
+                    intakeSubsystem::getCone ),
+                // Pull EXTEND all the way in
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true)
+            ),
+            new ParallelCommandGroup(
+                // Move SHOULDER to high position
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_HIGH_PRO, true),
+                new SequentialCommandGroup(
+                    // Wait for SHOULDER to be above bumper
+                    new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
+                    // Move WRIST to HIGH position
+                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_HIGH_PRO, false)
+                )
+            ),
+            // Wait until wrist is past straight
+            new WristWaitPositionCmd(wristSubsystem, false, WristConstants.WRIST_POSITION_STRAIGHT),
+            // Move EXTEND to HIGH position
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_HIGH, true)
+        );
+    }
+
     public Command ScoreMidCmd(){
         return new SequentialCommandGroup(
             new InstantCommand( ()->System.out.println("ScoreMidCmd") ),
@@ -500,6 +529,35 @@ public class RobotContainer
                     new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
                     // Move WRIST to MID position
                     new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID, false)
+                )
+            ),
+            // Wait until wrist is past straight
+            new WristWaitPositionCmd(wristSubsystem, false, WristConstants.WRIST_POSITION_STRAIGHT),
+            // Move EXTEND to MID position
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_MID, true)
+        );
+    }
+
+    public Command ScoreMidProCmd(){
+        return new SequentialCommandGroup(
+            new InstantCommand( ()->System.out.println("ScoreMidProCmd") ),
+            new ParallelCommandGroup(
+                // Pull game piece in a little IF IT IS A CONE
+                new ConditionalCommand(
+                    new IntakeJogCmd( intakeSubsystem, true ).withTimeout(0.1),
+                    new WaitCommand(0),
+                    intakeSubsystem::getCone ),
+                // Pull EXTEND all the way in
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true)
+            ),
+            new ParallelCommandGroup(
+                // Move SHOULDER to mid position
+                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_MID_PRO, true),
+                new SequentialCommandGroup(
+                    // Wait for SHOULDER to be above bumper
+                    new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
+                    // Move WRIST to MID position
+                    new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_MID_PRO, false)
                 )
             ),
             // Wait until wrist is past straight
@@ -545,19 +603,13 @@ public class RobotContainer
             new InstantCommand( ()->System.out.println("ShelfLoadConeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            // Move SHOULDER to SHELF
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, true),
             new ParallelCommandGroup (
-                // Move SHOULDER to SHELF
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, true),
-                new SequentialCommandGroup(
-                    // Wait for SHOULDER to be above bumper
-                    new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
-                    new ParallelCommandGroup (
-                        // Move WRIST to SHELF
-                        new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CONE, true),
-                        // Move EXTEND to SHELF
-                        new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
-                    )
-                )
+                // Move WRIST to SHELF
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CONE, true),
+                // Move EXTEND to SHELF
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
             )
         );
     }
@@ -567,19 +619,13 @@ public class RobotContainer
             new InstantCommand( ()->System.out.println("ShelfLoadCubeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
+            // Move SHOULDER to SHELF
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, true),
             new ParallelCommandGroup (
-                // Move SHOULDER to SHELF
-                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, true),
-                new SequentialCommandGroup(
-                    // Wait for SHOULDER to be above bumper
-                    new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
-                    new ParallelCommandGroup (
-                        // Move WRIST to SHELF
-                        new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CUBE, true),
-                        // Move EXTEND to SHELF
-                        new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
-                    )
-                )
+                // Move WRIST to SHELF
+                new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CUBE, true),
+                // Move EXTEND to SHELF
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
             )
         );
     }

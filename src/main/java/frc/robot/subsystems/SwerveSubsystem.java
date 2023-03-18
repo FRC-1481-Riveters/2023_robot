@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.Pigeon2;
+import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -51,7 +51,7 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderOffset,
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
-    private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort );
+    private final WPI_Pigeon2 gyro = new WPI_Pigeon2( Constants.DriveConstants.gyroPort );
 
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
@@ -73,6 +73,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public double getPitch(){
         return gyro.getPitch();
+    }
+
+    public double getRate()
+    {
+        return gyro.getRate();
     }
 
     public void zeroHeading() {

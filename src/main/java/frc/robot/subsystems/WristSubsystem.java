@@ -54,9 +54,9 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.setInverted(InvertType.InvertMotorOutput);
 
         // Set peak current
-        m_wristMotor.configPeakCurrentLimit(15, WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.configPeakCurrentLimit(20, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configPeakCurrentDuration(200, WristConstants.TALON_TIMEOUT_MS);
-        m_wristMotor.configContinuousCurrentLimit(10, WristConstants.TALON_TIMEOUT_MS);
+        m_wristMotor.configContinuousCurrentLimit(15, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_wristMotor.config_kF(1, WristConstants.WRIST_MOTOR_KF_STOW, WristConstants.TALON_TIMEOUT_MS);

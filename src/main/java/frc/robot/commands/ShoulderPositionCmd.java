@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ShoulderConstants;
 import frc.robot.subsystems.ShoulderSubsystem;
@@ -32,14 +34,6 @@ public class ShoulderPositionCmd extends CommandBase {
     System.out.println( "ShoulderPositionCmd to " + m_setPosition + ", current " + m_shoulderSubsystem.getPosition());
     m_shoulderSubsystem.setShoulder(0);
     position = m_shoulderSubsystem.getPosition();
-    if( m_setPosition > ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL )
-    {
-       m_shoulderSubsystem.selectLowPID(true);
-    }
-    else
-    {
-      m_shoulderSubsystem.selectLowPID(false);
-    }
     if( atPosition() == false )
     {
       if( position < m_setPosition )
@@ -92,18 +86,21 @@ public class ShoulderPositionCmd extends CommandBase {
   {
     if( Math.abs(m_shoulderSubsystem.getPosition() - m_setPosition) < ShoulderConstants.SHOULDER_TOLERANCE )
     {
+        System.out.println( "ShoulderPositionCmd atPosition: wanted " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
         return true;
     }
     else if( ( m_shoulderSubsystem.getShoulderOutput() > 0 ) &&
              (m_shoulderSubsystem.getPosition() > m_setPosition + ShoulderConstants.SHOULDER_TOLERANCE) )
     {
         // oops missed it
+        System.out.println( "ShoulderPositionCmd atPosition: missed > " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
         return true;
     }
     else if( ( m_shoulderSubsystem.getShoulderOutput() < 0 ) &&
              (m_shoulderSubsystem.getPosition() < m_setPosition - ShoulderConstants.SHOULDER_TOLERANCE) )
     {
         // oops missed it
+        System.out.println( "ShoulderPositionCmd atPosition: missed < " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
         return true;
     }
     else

@@ -52,6 +52,10 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotor.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
+        m_shoulderMotor.config_kF(2, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kP(2, ShoulderConstants.SHOULDER_MOTOR_KP_MID, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kI(2, ShoulderConstants.SHOULDER_MOTOR_KI_MID, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.config_kD(2, ShoulderConstants.SHOULDER_MOTOR_KD_MID, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kF(1, ShoulderConstants.SHOULDER_MOTOR_KF, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kP(1, ShoulderConstants.SHOULDER_MOTOR_KP_LOW, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.config_kI(1, ShoulderConstants.SHOULDER_MOTOR_KI_LOW, ShoulderConstants.TALON_TIMEOUT_MS);
@@ -73,9 +77,9 @@ public class ShoulderSubsystem extends SubsystemBase {
         m_shoulderMotorFollower.configFactoryDefault();
         m_shoulderMotor.setNeutralMode(NeutralMode.Brake);
         // Set peak current
-        m_shoulderMotor.configPeakCurrentLimit(15, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configPeakCurrentLimit(30, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.configPeakCurrentDuration(200, ShoulderConstants.TALON_TIMEOUT_MS);
-        m_shoulderMotor.configContinuousCurrentLimit(10, ShoulderConstants.TALON_TIMEOUT_MS);
+        m_shoulderMotor.configContinuousCurrentLimit(25, ShoulderConstants.TALON_TIMEOUT_MS);
         m_shoulderMotor.enableCurrentLimit(true);
         
         m_shoulderMotorFollower.setNeutralMode(NeutralMode.Brake);
@@ -86,17 +90,22 @@ public class ShoulderSubsystem extends SubsystemBase {
     {
         nt_shoulder_pos.setDouble( m_shoulderMotor.getSelectedSensorPosition() );
     }
-    public void selectLowPID( boolean isLow )
+    public void selectShoulderPID( int range )
     {
-        if( isLow == false )
+        if( range == 0 )    // high
         {
             System.out.println("shoulder PID slot 0");
             m_shoulderMotor.selectProfileSlot(0, 0);
         }
-        else
+        else if( range == 1 ) // low
         {
             System.out.println("shoulder PID slot 1");
             m_shoulderMotor.selectProfileSlot(1, 0);
+        }
+        else                // middle
+        {
+            System.out.println("shoulder PID slot 2");
+            m_shoulderMotor.selectProfileSlot(2, 0);
         }
     }
 
@@ -113,6 +122,22 @@ public class ShoulderSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         shoulderPosition = value;
+        System.out.println("Shoulder setPosition " + value);
+        if( shoulderPosition > ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL )
+        {
+          // low
+          selectShoulderPID(1);
+        }
+        else if( shoulderPosition < ShoulderConstants.SHOULDER_POSITION_HIGH_PRO )
+        {
+          // high
+          selectShoulderPID(0);
+        }
+        else
+        {
+          // middle
+          selectShoulderPID(2);
+        }
         m_shoulderMotor.setIntegralAccumulator(0);
         m_shoulderMotor.set(ControlMode.MotionMagic, value);
         nt_shoulder_set.setDouble( shoulderPosition );
