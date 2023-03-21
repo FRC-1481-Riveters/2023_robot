@@ -124,7 +124,7 @@ public final class Constants {
         public static final int SHOULDER_POSITION_SHELF_CUBE = 1653;   
         public static final int SHOULDER_POSITION_SHELF_CONE = 1658;   
         public static final int SHOULDER_POSITION_HIGH = 1588;   
-        public static final int SHOULDER_POSITION_HIGH_PRO = 1650;  
+        public static final int SHOULDER_POSITION_HIGH_PRO = 1700;  
         public static final int SHOULDER_POSITION_MID = 1690;   
         public static final int SHOULDER_POSITION_MID_PRO = 1908; 
         public static final int SHOULDER_POSITION_LOW = 2347;

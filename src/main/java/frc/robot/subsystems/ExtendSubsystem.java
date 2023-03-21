@@ -52,9 +52,9 @@ public class ExtendSubsystem extends SubsystemBase {
         // Configure Talon  SRX output and sensor direction
         m_extendMotor.setSensorPhase(true);
         // Set peak current
-        m_extendMotor.configPeakCurrentLimit(30, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configPeakCurrentLimit(15, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(25, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(12, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);
