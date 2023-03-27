@@ -86,7 +86,7 @@ import frc.robot.commands.ShoulderWaitPositionCmd;
 
 public class RobotContainer 
 {
-    private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+    public final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
     public final ShoulderSubsystem shoulderSubsystem = new ShoulderSubsystem();
     public final WristSubsystem wristSubsystem = new WristSubsystem();
     public final ExtendSubsystem extendSubsystem = new ExtendSubsystem();
@@ -228,7 +228,7 @@ public class RobotContainer
 
     private void configureButtonBindings() 
     {
-        new JoystickButton(driverJoystick, XboxController.Button.kStart.value).whenPressed( () -> swerveSubsystem.zeroHeading() );
+        new JoystickButton(driverJoystick, XboxController.Button.kA.value).whenPressed( () -> swerveSubsystem.zeroHeading(0.0) );
 
         new JoystickButton(driverJoystick, XboxController.Button.kLeftBumper.value)
            .whenPressed(() -> DriveSlowDividerSet(1.0))
@@ -269,8 +269,8 @@ public class RobotContainer
         m_driverDpadUp
             .onTrue( new SequentialCommandGroup(
                 new InstantCommand( ()-> swerveSubsystem.setRampRate(0.25)),
-                new InstantCommand( ()-> setCreep(DriveConstants.CreepLoading) ),
-                new InstantCommand( () -> swerveSubsystem.zeroHeading() )
+                new InstantCommand( ()-> setCreep(DriveConstants.CreepLoading) )
+                //new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) )
             ) )
             .onFalse( new SequentialCommandGroup(
                 new InstantCommand ( ()-> swerveSubsystem.setRampRate(0)),
@@ -505,7 +505,7 @@ public class RobotContainer
             // Wait until wrist is past straight
             new WristWaitPositionCmd(wristSubsystem, false, WristConstants.WRIST_POSITION_STRAIGHT),
             // Move EXTEND to HIGH position
-            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_HIGH, true)
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_HIGH_PRO, true)
         );
     }
 
@@ -778,7 +778,7 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),
@@ -787,7 +787,7 @@ public class RobotContainer
                 StowCmdHigh(),
                 autoBuilderCommand
             ),
-            new InstantCommand( ()->setCreep(DriveConstants.CreepBalance * 0.8) ),
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalance * 0.9) ),
             new BalanceWaitLevelCmd(swerveSubsystem)
                 .deadlineWith(
                     new SwerveJoystickCmd(
@@ -799,7 +799,7 @@ public class RobotContainer
                     )
                 ),
             new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
-            new WaitCommand(0.25)
+            new WaitCommand(0.15)
             .deadlineWith(
                 new SwerveJoystickCmd(
                     swerveSubsystem,
@@ -842,7 +842,7 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),
@@ -924,7 +924,7 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),
@@ -980,7 +980,7 @@ public class RobotContainer
         Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
 
         return new SequentialCommandGroup(
-            new InstantCommand( () -> swerveSubsystem.zeroHeading() ),
+            new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),

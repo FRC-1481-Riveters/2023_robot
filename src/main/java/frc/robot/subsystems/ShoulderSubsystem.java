@@ -128,7 +128,7 @@ public class ShoulderSubsystem extends SubsystemBase {
           // low
           selectShoulderPID(1);
         }
-        else if( shoulderPosition < ShoulderConstants.SHOULDER_POSITION_HIGH_PRO )
+        else if( shoulderPosition >= ShoulderConstants.SHOULDER_POSITION_HIGH_PRO )
         {
           // high
           selectShoulderPID(0);

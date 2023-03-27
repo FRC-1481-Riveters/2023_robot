@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.WPI_Pigeon2;
+import com.ctre.phoenix.sensors.Pigeon2;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -51,7 +51,7 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderOffset,
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
-    private final WPI_Pigeon2 gyro = new WPI_Pigeon2( Constants.DriveConstants.gyroPort );
+    private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort );
 
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
@@ -64,7 +64,7 @@ public class SwerveSubsystem extends SubsystemBase {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                zeroHeading();
+                zeroHeading(0.0);
             } catch (Exception e) {
             }
         }).start();
@@ -77,12 +77,12 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public double getRate()
     {
-        return gyro.getRate();
+        return 0; //gyro.getRate();
     }
 
-    public void zeroHeading() {
-        gyro.setAccumZAngle(0); //.setFusedHeading(0);
-        gyro.setYaw(0);
+    public void zeroHeading(double heading) {
+        //gyro.setAccumZAngle(0); //.setFusedHeading(0);
+        gyro.setYaw(heading);
         frontLeft.resetEncoders();
         frontRight.resetEncoders();
         backLeft.resetEncoders();

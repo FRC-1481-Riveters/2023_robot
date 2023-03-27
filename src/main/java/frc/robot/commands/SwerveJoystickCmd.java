@@ -93,7 +93,7 @@ public class SwerveJoystickCmd extends CommandBase {
             // Relative to field
             // - correct for swerve drift... this snippet stolen from Chief Delphi
             // https://www.chiefdelphi.com/t/field-relative-swervedrive-drift-even-with-simulated-perfect-modules/413892
-            double gyroRate = swerveSubsystem.getRate() * 0; //0.06;
+            double gyroRate = 0; //swerveSubsystem.getRate() * 0; //0.06;
             Rotation2d correctedRotation = 
                 swerveSubsystem.getPose().getRotation().minus(new Rotation2d(gyroRate));
 

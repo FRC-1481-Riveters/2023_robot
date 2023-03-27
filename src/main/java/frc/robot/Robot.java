@@ -129,6 +129,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
+        m_robotContainer.swerveSubsystem.zeroHeading(180.0);
         m_robotContainer.setCreep(0);
     }
 
