@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ExtendSubsystem;
+import frc.robot.Constants.ExtendConstants;
 
 public class ExtendJogOutCmd extends CommandBase {
 
@@ -27,7 +28,7 @@ public class ExtendJogOutCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_extendSubsystem.setExtend(1.0);
+    m_extendSubsystem.setExtend(0.4);
   }
 
   // Called once the command ends or is interrupted.

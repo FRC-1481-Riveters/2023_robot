@@ -52,9 +52,10 @@ public class ExtendSubsystem extends SubsystemBase {
         // Configure Talon  SRX output and sensor direction
         m_extendMotor.setSensorPhase(true);
         // Set peak current
-        m_extendMotor.configPeakCurrentLimit(15, ExtendConstants.TALON_TIMEOUT_MS);
+        // RS775 PRO motor = 347W peak power => 27A current limit
+        m_extendMotor.configPeakCurrentLimit(35, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(12, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(27, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);
@@ -78,7 +79,7 @@ public class ExtendSubsystem extends SubsystemBase {
     {
         nt_extend_pos.setDouble( m_extendMotor.getSelectedSensorPosition() );
         if (m_extendMotor.getControlMode() == ControlMode.MotionMagic )
-        m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
+            m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
         if( (limitSwitch_di.get() == false) && (limitSwitch_previous == true) )
         {
             limitSwitch_previous = false;

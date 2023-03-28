@@ -37,9 +37,18 @@ public class ShoulderPositionCmd extends CommandBase {
     if( atPosition() == false )
     {
       if( position < m_setPosition )
-        m_shoulderSubsystem.setShoulder(0.7);
+      {
+        if( Math.abs( position - m_setPosition ) < 500 )
+          // if we're just going down a little bit, go slower
+          m_shoulderSubsystem.setShoulder(0.6);
+        else
+          // if we're going down a lot, go fast
+          m_shoulderSubsystem.setShoulder(1.0);
+      }
       else
-        m_shoulderSubsystem.setShoulder(-0.7);
+      {
+          m_shoulderSubsystem.setShoulder(-1.0);
+      }
     }
     //m_shoulderSubsystem.setPosition(m_setPosition);
     System.out.println(System.currentTimeMillis() + " ShoulderPositionCmd " + m_setPosition);
