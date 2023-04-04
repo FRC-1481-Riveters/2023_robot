@@ -53,6 +53,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort );
 
+    private double yawOffset = 0;
+
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
     
@@ -64,6 +66,7 @@ public class SwerveSubsystem extends SubsystemBase {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
+                gyro.setYaw(0, 1000);
                 zeroHeading(0.0);
             } catch (Exception e) {
             }
@@ -82,16 +85,19 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void zeroHeading(double heading) {
         //gyro.setAccumZAngle(0); //.setFusedHeading(0);
-        gyro.setYaw(heading);
+        yawOffset = gyro.getYaw() + heading;
+        System.out.println("zeroHeading: heading=" + heading + ", offset=" + yawOffset);
         frontLeft.resetEncoders();
         frontRight.resetEncoders();
         backLeft.resetEncoders();
         backRight.resetEncoders();
+        odometer.resetPosition(getRotation2d(),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()},new Pose2d(0,0,getRotation2d()));
     }
 
     public double getHeading() {
         //TODO: not sure if the Pigeon2 getYaw returning -368 to 368 is OK here (should it be 0...360)?
-        return Math.IEEEremainder( gyro.getYaw(), 360 );
+        //return Math.IEEEremainder( gyro.getYaw() - yawOffset, 360 );
+        return gyro.getYaw() - yawOffset;
     }
 
     public Rotation2d getRotation2d() {

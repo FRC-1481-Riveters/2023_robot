@@ -23,7 +23,7 @@ public class ExtendPositionCmd extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println( "ExtendPositionCmd to " + m_setPosition + ", current " + m_extendSubsystem.getPosition());
+    System.out.println( "ExtendPositionCmd init: set=" + m_setPosition + ", current " + m_extendSubsystem.getPosition());
     m_extendSubsystem.setPosition(m_setPosition);
   }
 
@@ -32,6 +32,7 @@ public class ExtendPositionCmd extends CommandBase {
   public boolean isFinished() {
     if( (m_extendSubsystem.atPosition() || m_waitAtPosition == false) )
     {
+      System.out.println( "ExtendPositionCmd finished: set=" + m_setPosition + ", current " + m_extendSubsystem.getPosition());
       return true;
     }
     else
@@ -40,4 +41,9 @@ public class ExtendPositionCmd extends CommandBase {
     }
   }
 
+  @Override
+  public void end( boolean interrupted )
+  {
+    System.out.println( "ExtendPositionCmd end: interrupted=" + interrupted + ", set " + m_setPosition + ", current " + m_extendSubsystem.getPosition());
+  }
 }

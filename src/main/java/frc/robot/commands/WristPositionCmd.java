@@ -40,6 +40,7 @@ public class WristPositionCmd extends CommandBase {
   public boolean isFinished() {
       if( m_wristSubsystem.atPosition() || m_waitAtPosition == false)
       {
+        System.out.println("WristPositionCmd finished: set " + m_setPosition + ", at " + m_wristSubsystem.getPosition());
         return true;
       }
       else
@@ -53,12 +54,12 @@ public class WristPositionCmd extends CommandBase {
     if (m_setPosition < WristConstants.WRIST_POSITION_BOUNCY )
     {
       m_wristSubsystem.setPosition(m_setPosition); 
-      System.out.println("WristPositionCmd " + m_setPosition + " done, now PID");
+      System.out.println("WristPositionCmd end: interrupted=" + interrupted + ", set " + m_setPosition + " done, now PID");
     }
     else
     {
       m_wristSubsystem.setWrist(0);
-      System.out.println("WristPositionCmd " + m_setPosition + " done, now0");
+      System.out.println("WristPositionCmd end: interrupted=" + interrupted + ", set " + m_setPosition + " done, now 0");
     }
 }
 }

@@ -32,7 +32,7 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotorFollower = new TalonSRX(WristConstants.WRIST_MOTOR_FOLLOWER);
         m_wristMotor = new TalonSRX(WristConstants.WRIST_MOTOR);
         m_wristMotorFollower.follow(m_wristMotor);
-        m_wristMotorFollower.setInverted(InvertType.InvertMotorOutput);
+        //m_wristMotorFollower.setInverted(InvertType.InvertMotorOutput);
 
         m_cancoder = new CANCoder(WristConstants.WRIST_MOTOR_CANCODER);
         tab = Shuffleboard.getTab("Wrist");
@@ -50,8 +50,8 @@ public class WristSubsystem extends SubsystemBase {
         m_wristMotor.configFeedbackNotContinuous(true, WristConstants.TALON_TIMEOUT_MS);
         m_wristMotor.configRemoteFeedbackFilter(m_cancoder, 0);
         // Configure Talon  SRX output and sensor direction
-        m_wristMotor.setSensorPhase(true);
-        m_wristMotor.setInverted(InvertType.InvertMotorOutput);
+        m_wristMotor.setSensorPhase(false);
+        //m_wristMotor.setInverted(InvertType.InvertMotorOutput);
 
         // Set peak current
         m_wristMotor.configPeakCurrentLimit(20, WristConstants.TALON_TIMEOUT_MS);

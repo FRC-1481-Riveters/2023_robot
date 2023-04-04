@@ -21,100 +21,28 @@ public class ShoulderPositionCmd extends CommandBase {
         addRequirements(subsystem);
     }
 
-    /*public ShoulderPositionCmd( ShoulderSubsystem subsystem, double position )
-    {
-        ShoulderPositionCmd(subsystem, position, false);
-    }*/
-
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    double position;
-    countdown_pid_handoff = 0;
-    System.out.println( "ShoulderPositionCmd to " + m_setPosition + ", current " + m_shoulderSubsystem.getPosition());
-    m_shoulderSubsystem.setShoulder(0);
-    position = m_shoulderSubsystem.getPosition();
-    if( atPosition() == false )
-    {
-      if( position < m_setPosition )
-      {
-        if( Math.abs( position - m_setPosition ) < 500 )
-          // if we're just going down a little bit, go slower
-          m_shoulderSubsystem.setShoulder(0.6);
-        else
-          // if we're going down a lot, go fast
-          m_shoulderSubsystem.setShoulder(1.0);
-      }
-      else
-      {
-          m_shoulderSubsystem.setShoulder(-1.0);
-      }
-    }
-    //m_shoulderSubsystem.setPosition(m_setPosition);
-    System.out.println(System.currentTimeMillis() + " ShoulderPositionCmd " + m_setPosition);
+    m_shoulderSubsystem.setPosition(m_setPosition);
+    System.out.println("ShoulderPositionCmd: init, set " + m_setPosition + ", at " + m_shoulderSubsystem.getPosition());
   }
 
   // Returns true when the command should end.
   @Override
-  public boolean isFinished() {
-    if( (countdown_pid_handoff == 0 ) &&
-        (atPosition() || m_waitAtPosition == false) )
+  public boolean isFinished() 
+  {
+    if( m_waitAtPosition == false )
     {
-      m_shoulderSubsystem.setShoulder(0);
-      countdown_pid_handoff = 1;
-      System.out.println(System.currentTimeMillis() + " ShoulderPositionCmd " + m_setPosition + " counting down");
-      return false;
+      System.out.println("ShoulderPositionCmd: don't wait, set " + m_setPosition + ", at " + m_shoulderSubsystem.getPosition());
+      return true;
     }
-    else if( countdown_pid_handoff != 0 )
+    else if( m_shoulderSubsystem.atPosition() )
     {
-       ++countdown_pid_handoff;
-       if( countdown_pid_handoff == 5 )
-       {
-          System.out.println(System.currentTimeMillis() + " ShoulderPositionCmd " + m_setPosition + " done");
-          return true;
-       }
-       else
-       {
-          return false;
-       }
+      System.out.println("ShoulderPositionCmd: done, set " + m_setPosition + ", at " + m_shoulderSubsystem.getPosition());
+      return true;
     }
     else
-    {
-      countdown_pid_handoff = 0;
       return false;
-    }
-  }
-
-  @Override
-  public void end( boolean interrupted) 
-  {
-    m_shoulderSubsystem.setPosition(m_setPosition);
-  }
-
-  private boolean atPosition()
-  {
-    if( Math.abs(m_shoulderSubsystem.getPosition() - m_setPosition) < ShoulderConstants.SHOULDER_TOLERANCE )
-    {
-        System.out.println( "ShoulderPositionCmd atPosition: wanted " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
-        return true;
-    }
-    else if( ( m_shoulderSubsystem.getShoulderOutput() > 0 ) &&
-             (m_shoulderSubsystem.getPosition() > m_setPosition + ShoulderConstants.SHOULDER_TOLERANCE) )
-    {
-        // oops missed it
-        System.out.println( "ShoulderPositionCmd atPosition: missed > " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
-        return true;
-    }
-    else if( ( m_shoulderSubsystem.getShoulderOutput() < 0 ) &&
-             (m_shoulderSubsystem.getPosition() < m_setPosition - ShoulderConstants.SHOULDER_TOLERANCE) )
-    {
-        // oops missed it
-        System.out.println( "ShoulderPositionCmd atPosition: missed < " + m_setPosition + ", got " + m_shoulderSubsystem.getPosition());
-        return true;
-    }
-    else
-    {
-        return false;
-    }
   }
 }

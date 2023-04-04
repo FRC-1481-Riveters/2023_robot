@@ -164,7 +164,7 @@ public class RobotContainer
 
         // FIXME MUST NOT BE ENABLED WITH FMS!!!
         // FIXME DISABLE THIS BEFORE COMPETITION!
-        PathPlannerServer.startServer(5811); // 5811 = port number. adjust this according to your needs
+        //PathPlannerServer.startServer(5811); // 5811 = port number. adjust this according to your needs
     }
 
     private void setBling( int red, int green, int blue )
@@ -234,7 +234,11 @@ public class RobotContainer
            .whenPressed(() -> DriveSlowDividerSet(1.0))
            .whenReleased(() -> DriveSlowDividerSet(1.5));
         
-           new JoystickButton(driverJoystick, XboxController.Button.kRightBumper.value)
+        new JoystickButton(driverJoystick, XboxController.Button.kRightBumper.value)
+           .whenPressed(() -> DriveSlowDividerSet(2.6))
+           .whenReleased(() -> DriveSlowDividerSet(1.5));
+
+        new JoystickButton(operatorJoystick, XboxController.Button.kRightBumper.value)
            .whenPressed(() -> DriveSlowDividerSet(2.6))
            .whenReleased(() -> DriveSlowDividerSet(1.5));
         
@@ -413,7 +417,7 @@ public class RobotContainer
                     // Pull SHOULDER all the way down
                     new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true),
                     new InstantCommand( ()-> wristSubsystem.setPosition(WristConstants.WRIST_POSITION_STOWED) ),
-                    new WaitCommand(1.0)
+                    new WaitCommand(0.5)
                 )
             ),
             new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
@@ -430,19 +434,18 @@ public class RobotContainer
             new InstantCommand( ()->System.out.println("StowCmdHigh") ),
             new ParallelCommandGroup(
                 // Move EXTEND all the way in
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-                // Once EXTEND is in past the shelf, move WRIST all the way in
+                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, false),
                 new SequentialCommandGroup(
-                    new ExtendWaitPositionCmd( extendSubsystem, false, ExtendConstants.EXTEND_POSITION_SHELF ),
+                    // Wait for EXTEND to be past the shelf
+                    new ExtendWaitPositionCmd(extendSubsystem, false, ExtendConstants.EXTEND_POSITION_HIGH_PRO - 5000),
+                    // Once EXTEND is in past the shelf, move WRIST all the way in
                     new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_STOWED, true)
-                ),
-                // Once WRIST is almost all the way in, start moving SHOULDER down
-                new SequentialCommandGroup(
-                    new WristWaitPositionCmd(wristSubsystem, true, WristConstants.WRIST_POSITION_STOWED - 300),
-                    new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true),
-                    new InstantCommand( ()->wristSubsystem.setPosition(WristConstants.WRIST_POSITION_STOWED) ),
-                    new WaitCommand(1.0)
                 )
+            ),
+            // Move SHOULDER to STOWED
+            new SequentialCommandGroup(
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_STOWED, true),
+                new WaitCommand(0.5)
             ),
             new InstantCommand(() -> shoulderSubsystem.setShoulder(0)),
             new InstantCommand(() -> extendSubsystem.setExtend(0)),
@@ -798,7 +801,7 @@ public class RobotContainer
                         () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                     )
                 ),
-            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
+            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalance * 0.6) ),
             new WaitCommand(0.15)
             .deadlineWith(
                 new SwerveJoystickCmd(
@@ -818,12 +821,12 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance + Mobility", 
-            new PathConstraints(0.8, 2.2));
+            new PathConstraints(0.7, 2.0));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
-        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        eventMap.put("Stow", StowCmdHigh());
         //eventMap.put("intakeDown", new IntakeDown());
 
         // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
@@ -845,13 +848,10 @@ public class RobotContainer
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
-            new WaitCommand(0.5),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            new ParallelCommandGroup(
-                StowCmdHigh(),
-                autoBuilderCommand
-            ),
-            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility) ),
+            new WaitCommand(0.2),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
+            autoBuilderCommand,
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility * 0.9) ),
             new BalanceWaitLevelCmd(swerveSubsystem)
                 .deadlineWith(
                     new SwerveJoystickCmd(
@@ -862,8 +862,8 @@ public class RobotContainer
                         () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                     )
                 ),
-            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility) ),
-            new WaitCommand(0.25)
+            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
+            new WaitCommand(0.15)
             .deadlineWith(
                 new SwerveJoystickCmd(
                     swerveSubsystem,
@@ -942,22 +942,29 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Outer", 
-            new PathConstraints(2, 1));
+            new PathConstraints(3.5, 1.3));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
 
+        eventMap.put("FloorLoadSetup", 
+            new SequentialCommandGroup(
+                new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+                FloorLoadCubeCmd()
+            )
+        );
+
         eventMap.put("LoadLow", 
             new SequentialCommandGroup(
-                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(1.0),
-                StowCmdLow()
+                new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(1.0)
             )
         );
 
         eventMap.put("ScoreHigh2",
             new SequentialCommandGroup(
-                ScoreHighCmd(),
+                ScoreHighProCmd(),
                 new WaitCommand(0.5),
                 new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
                 StowCmdHigh()
@@ -983,10 +990,8 @@ public class RobotContainer
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
-            new WaitCommand(0.5),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
-            FloorLoadCubeCmd(),
+            new WaitCommand(0.2),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
             autoBuilderCommand
         );
     }

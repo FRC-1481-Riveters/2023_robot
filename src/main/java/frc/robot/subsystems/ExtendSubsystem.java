@@ -9,12 +9,12 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import edu.wpi.first.wpilibj.DigitalInput;
-
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.Timer;
 
 
 public class ExtendSubsystem extends SubsystemBase {
@@ -29,6 +29,7 @@ public class ExtendSubsystem extends SubsystemBase {
     private double shoulderCosine;
     private boolean limitSwitch_previous = true;
     private DigitalInput limitSwitch_di;
+    private Timer enableTimer;
 
     public ExtendSubsystem() 
     {
@@ -53,9 +54,9 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.setSensorPhase(true);
         // Set peak current
         // RS775 PRO motor = 347W peak power => 27A current limit
-        m_extendMotor.configPeakCurrentLimit(35, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configPeakCurrentLimit(27, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(27, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(23, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);
@@ -72,6 +73,8 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.configReverseSoftLimitThreshold(ExtendConstants.EXTEND_MOTOR_MIN);
         //m_extendMotor.configReverseSoftLimitEnable(true);
 
+        enableTimer = new Timer();
+        enableTimer.start();        
     }
 
     @Override
@@ -79,7 +82,20 @@ public class ExtendSubsystem extends SubsystemBase {
     {
         nt_extend_pos.setDouble( m_extendMotor.getSelectedSensorPosition() );
         if (m_extendMotor.getControlMode() == ControlMode.MotionMagic )
+        {
             m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
+
+            // If something goes wrong and the motor is enabled for more than 15 seconds, turn it off
+            if( enableTimer.hasElapsed(15) )
+            {
+                m_extendMotor.set(ControlMode.PercentOutput, 0 );
+            }
+        }
+        else
+        {
+            // If the motor isn't in MotionMagic mode, reset its enable timer
+            enableTimer.reset();
+        }
         if( (limitSwitch_di.get() == false) && (limitSwitch_previous == true) )
         {
             limitSwitch_previous = false;
