@@ -122,7 +122,7 @@ public final class Constants {
         public static final int SHOULDER_POSITION_TEST_85 = 2500;
         public static final int SHOULDER_POSITION_TEST_15 = 1800;
         public static final int SHOULDER_POSITION_SHELF_CUBE = 1700;   
-        public static final int SHOULDER_POSITION_SHELF_CONE = 1710;   
+        public static final int SHOULDER_POSITION_SHELF_CONE = 1705;   
         public static final int SHOULDER_POSITION_HIGH = 1588;   
         public static final int SHOULDER_POSITION_HIGH_PRO = 1768;  
         public static final int SHOULDER_POSITION_MID = 1690;   
@@ -167,7 +167,7 @@ public final class Constants {
         public static final int WRIST_POSITION_STRAIGHT = 952;
         public static final int WRIST_POSITION_BOUNCY = 1200;
         public static final int WRIST_POSITION_STOWED = 1710;
-        public static final int WRIST_POSITION_CONE_PICKUP = 129;
+        public static final int WRIST_POSITION_CONE_PICKUP = 165;
         public static final int WRIST_POSITION_CUBE_PICKUP = 239;
 
         public static final int TALON_TIMEOUT_MS = 5000;
@@ -183,7 +183,7 @@ public final class Constants {
         public static final int EXTEND_MOTOR_CANCODER = 56;
         public static final double EXTEND_MOTOR_KF = 0.00;
         public static final double EXTEND_MOTOR_KP = 2.4; //2.0;
-        public static final double EXTEND_MOTOR_KI = 0.0005; //0.0001;
+        public static final double EXTEND_MOTOR_KI = 0.001; //0.0001;
         public static final double EXTEND_MOTOR_KD = 0.5; //0.5;                                  
         public static final double EXTEND_MOTOR_CRUISE = 3000;
         public static final double EXTEND_MOTOR_ACCELERATION = 12000;
@@ -194,7 +194,7 @@ public final class Constants {
         public static final int EXTEND_POSITION_SHELF = 4938;   
         public static final int EXTEND_POSITION_HIGH = 16854;   
         public static final int EXTEND_POSITION_HIGH_PRO = 16000; //16854;   
-        public static final int EXTEND_POSITION_MID = 2500;   
+        public static final int EXTEND_POSITION_MID = 2750;   
         public static final int EXTEND_POSITION_LOW = 0;
         public static final int EXTEND_POSITION_SCORE_LOW = 1800;
         public static final int EXTEND_POSITION_CONE_PICKUP = 4020;   

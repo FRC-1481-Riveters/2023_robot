@@ -54,9 +54,9 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.setSensorPhase(true);
         // Set peak current
         // RS775 PRO motor = 347W peak power => 27A current limit
-        m_extendMotor.configPeakCurrentLimit(27, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configPeakCurrentLimit(30, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(23, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(24, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);

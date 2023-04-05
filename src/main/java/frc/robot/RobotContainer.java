@@ -606,14 +606,18 @@ public class RobotContainer
             new InstantCommand( ()->System.out.println("ShelfLoadConeCmd") ),
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
-            // Move SHOULDER to SHELF
-            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, true),
-            new ParallelCommandGroup (
+            // Start moving SHOULDER to SHELF
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, false),
+            new SequentialCommandGroup(
+                // Wait for SHOULDER to be above bumper
+                new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
                 // Move WRIST to SHELF
                 new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CONE, true),
+                // Wait for SHOULDER to be correct
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CONE, true),
                 // Move EXTEND to SHELF
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
-            )
+            )   
         );
     }
 
@@ -623,10 +627,14 @@ public class RobotContainer
             // Move EXTEND all the way in
             new ExtendPositionCmd(extendSubsystem, ExtendConstants.EXTEND_MOTOR_MIN, true),
             // Move SHOULDER to SHELF
-            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, true),
-            new ParallelCommandGroup (
+            new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, false),
+            new SequentialCommandGroup(
+                // Wait for SHOULDER to be above bumper
+                new ShoulderWaitPositionCmd( shoulderSubsystem, false, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL ),
                 // Move WRIST to SHELF
                 new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_SHELF_CUBE, true),
+                // Wait for SHOULDER to be correct
+                new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_SHELF_CUBE, true),
                 // Move EXTEND to SHELF
                 new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_SHELF, true)
             )
@@ -821,7 +829,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance + Mobility", 
-            new PathConstraints(0.7, 2.0));
+            new PathConstraints(0.73, 2.0));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
