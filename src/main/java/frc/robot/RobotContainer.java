@@ -854,7 +854,7 @@ public class RobotContainer
 
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
             ScoreHighCmd(),
             new WaitCommand(0.2),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
@@ -897,8 +897,8 @@ public class RobotContainer
         HashMap<String, Command> eventMap = new HashMap<>();
         eventMap.put("FloorLoad",
             new SequentialCommandGroup(
-                new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-                FloorLoadConeFromHighCmd()
+                new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+                FloorLoadCubeCmd()
             )
         );
 
@@ -933,15 +933,16 @@ public class RobotContainer
 
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-            // Move EXTEND to CONE PICKUP
-            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CONE_PICKUP, true),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+            // Move EXTEND to CUBE PICKUP
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CUBE_PICKUP, true),
             autoBuilderCommand,
-            ScoreLowCmd()
+            ScoreMidProCmd(),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5)
         );
     }
 
@@ -966,14 +967,13 @@ public class RobotContainer
         eventMap.put("LoadLow", 
             new SequentialCommandGroup(
                 new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
-                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(1.0)
+                new IntakeJogCmd( intakeSubsystem, true ).withTimeout(2.0)
             )
         );
 
         eventMap.put("ScoreHigh2",
             new SequentialCommandGroup(
-                ScoreHighProCmd(),
-                new WaitCommand(0.5),
+                ScoreMidProCmd(),
                 new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
                 StowCmdHigh()
             )
@@ -996,10 +996,10 @@ public class RobotContainer
 
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
-            new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
-            ScoreHighCmd(),
-            new WaitCommand(0.2),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+            ScoreHighProCmd(),
+            new WaitCommand(0.5),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             autoBuilderCommand
         );
     }
