@@ -23,11 +23,6 @@ public class ExtendJogOutCmd extends CommandBase {
   @Override
   public void initialize() {
     System.out.println("extend out");
-  }
-
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
     m_extendSubsystem.setExtend(0.4);
   }
 

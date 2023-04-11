@@ -129,7 +129,7 @@ public final class Constants {
         public static final int SHOULDER_POSITION_MID = SHOULDER_POSITION_STOWED - 740; //1640; //1690;   
         public static final int SHOULDER_POSITION_MID_PRO = SHOULDER_POSITION_STOWED - 522; //1858;//1908; 
         public static final int SHOULDER_POSITION_LOW = SHOULDER_POSITION_STOWED - 83; //2297; //2347;
-        public static final int SHOULDER_POSITION_LEVEL = SHOULDER_POSITION_STOWED - 519; //1861; //1911;
+        public static final int SHOULDER_POSITION_LEVEL = SHOULDER_POSITION_STOWED - 400; //1861; //1911;
         public static final int SHOULDER_POSITION_DOWN = SHOULDER_POSITION_STOWED + 505; //2885; //2935;
         public static final int SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL = SHOULDER_POSITION_STOWED - 280; //2100; //2150;
         public static final int SHOULDER_POSITION_CONE_PICKUP = SHOULDER_POSITION_STOWED + 85; //2465; //2515;
@@ -145,7 +145,7 @@ public final class Constants {
         public static final int WRIST_MOTOR_FOLLOWER = 50;
         public static final double WRIST_MOTOR_KF = 0.00;
         public static final double WRIST_MOTOR_KP = 6.0; //9.0;
-        public static final double WRIST_MOTOR_KI = 0.03;
+        public static final double WRIST_MOTOR_KI = 0.00; //3;
         public static final double WRIST_MOTOR_KD = 1.0; //1.2;
         public static final double WRIST_MOTOR_KF_STOW = 0.0;
         public static final double WRIST_MOTOR_KP_STOW = 1.0;
@@ -183,9 +183,9 @@ public final class Constants {
         public static final int EXTEND_MOTOR = 55;
         public static final int EXTEND_MOTOR_CANCODER = 56;
         public static final double EXTEND_MOTOR_KF = 0.00;
-        public static final double EXTEND_MOTOR_KP = 2.4; //2.0;
-        public static final double EXTEND_MOTOR_KI = 0.001; //0.0001;
-        public static final double EXTEND_MOTOR_KD = 0.5; //0.5;                                  
+        public static final double EXTEND_MOTOR_KP = 2.0; //2.0;
+        public static final double EXTEND_MOTOR_KI = 0; //0.001; //0.0001;
+        public static final double EXTEND_MOTOR_KD = 0.4; //0.5;                                  
         public static final double EXTEND_MOTOR_CRUISE = 3000;
         public static final double EXTEND_MOTOR_ACCELERATION = 12000;
         public static final int EXTEND_MOTOR_MIN = 0;

@@ -52,11 +52,13 @@ public class ExtendSubsystem extends SubsystemBase {
         m_extendMotor.configRemoteFeedbackFilter(m_cancoder, 0);
         // Configure Talon  SRX output and sensor direction
         m_extendMotor.setSensorPhase(true);
-        // Set peak current
+        // Set current limits
         // RS775 PRO motor = 347W peak power => 27A current limit
-        m_extendMotor.configPeakCurrentLimit(30, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configPeakCurrentDuration(200, ExtendConstants.TALON_TIMEOUT_MS);
-        m_extendMotor.configContinuousCurrentLimit(24, ExtendConstants.TALON_TIMEOUT_MS);
+        // But also set continuous current limit to 9A to avoid burning the motor up in a stall condition, per this discussion:
+        // https://www.chiefdelphi.com/t/stall-testing-775-pro-surprisingly-poor-result/166538/88
+        m_extendMotor.configPeakCurrentLimit(27, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configPeakCurrentDuration(2000, ExtendConstants.TALON_TIMEOUT_MS);
+        m_extendMotor.configContinuousCurrentLimit(9, ExtendConstants.TALON_TIMEOUT_MS);
         m_extendMotor.enableCurrentLimit(true);
         // Set Motion Magic gains in slot0
         m_extendMotor.selectProfileSlot(0, 0);
@@ -109,6 +111,10 @@ public class ExtendSubsystem extends SubsystemBase {
     }
     public void setExtend( double minus_one_to_one )
     {
+        if( minus_one_to_one < 0 )
+        {
+            m_extendMotor.configReverseSoftLimitEnable(false);  // when jogging in            
+        }
         m_extendMotor.set(ControlMode.PercentOutput, minus_one_to_one);
         nt_extend_set.setDouble( minus_one_to_one );
     }
@@ -120,6 +126,7 @@ public class ExtendSubsystem extends SubsystemBase {
     
     public void setPosition(double value){
         extendPosition = value;
+        m_extendMotor.configReverseSoftLimitEnable(true);  // after jogging in            
         m_extendMotor.setIntegralAccumulator(0);
         m_extendMotor.set(ControlMode.MotionMagic, value);
         nt_extend_set.setDouble( extendPosition );
