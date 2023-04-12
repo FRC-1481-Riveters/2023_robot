@@ -82,7 +82,7 @@ public final class Constants {
 
         public static final double CreepLoading = -0.37;
         public static final double CreepBalance = -0.30;
-        public static final double CreepBalanceMobility = 0.30;
+        public static final double CreepBalanceMobility = 0.40;
 
     }
 

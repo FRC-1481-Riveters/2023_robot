@@ -790,6 +790,7 @@ public class RobotContainer
 
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
+            new InstantCommand( () -> swerveSubsystem.initialPitch() ),
             new InstantCommand( ()-> intakeSubsystem.setCone(true) ),
             ScoreHighCmd(),
             new WaitCommand(0.5),
@@ -799,14 +800,11 @@ public class RobotContainer
                 autoBuilderCommand
             ),
             new InstantCommand( ()->setCreep(DriveConstants.CreepBalance * 0.9) ),
-            new BalanceWaitLevelCmd(swerveSubsystem)
+            new BalanceWaitLevelCmd(swerveSubsystem, 4.0)
                 .deadlineWith(
                     new SwerveJoystickCmd(
                         swerveSubsystem,
-                        () -> getDriverMoveFwdBack(),
-                        () -> getDriverMoveLeftRight(),
-                        () -> getDriverRotate(),
-                        () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                        () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                     )
                 ),
             new InstantCommand( ()->setCreep(-DriveConstants.CreepBalance * 0.6) ),
@@ -814,10 +812,7 @@ public class RobotContainer
             .deadlineWith(
                 new SwerveJoystickCmd(
                     swerveSubsystem,
-                    () -> getDriverMoveFwdBack(),
-                    () -> getDriverMoveLeftRight(),
-                    () -> getDriverRotate(),
-                    () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
+                    () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
                 )
             ),
             new InstantCommand( ()->setCreep(0) )
@@ -829,7 +824,7 @@ public class RobotContainer
         // Load the PathPlanner path file and generate it with a max
         // velocity and acceleration for every path in the group
         List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Balance + Mobility", 
-            new PathConstraints(0.73, 2.0));
+            new PathConstraints(0.9, 2.0));
 
         // This is just an example event map. It would be better to have a constant, global event map
         // in your code that will be used by all path following commands.
@@ -854,45 +849,40 @@ public class RobotContainer
 
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
+            new InstantCommand( () -> swerveSubsystem.initialPitch() ),
             new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
-            ScoreHighProCmd().withTimeout(2.0),
-            new WaitCommand(0.2),
+            ScoreHighProCmd().withTimeout(3.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
             autoBuilderCommand,
-            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility * 0.9) ),
-            new BalanceWaitLevelCmd(swerveSubsystem)
+            // After pathplanner mobility finishes halfway up the ramp, creep forward
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility) ),
+            // Wait for the platform to start tilting
+            new BalanceWaitLevelCmd(swerveSubsystem, 6.5)
                 .deadlineWith(
-                    new SwerveJoystickCmd(
-                        swerveSubsystem,
-                        () -> getDriverMoveFwdBack(),
-                        () -> getDriverMoveLeftRight(),
-                        () -> getDriverRotate(),
-                        () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
-                    )
+                    new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
                 ),
+            // Once platform starts tilting, stop driving forward
+            new InstantCommand( ()->setCreep(0) ),
+            new WaitCommand(0.1)
+                .deadlineWith(
+                    new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
+                ),
+            // Once platform starts tilting, wait a little for it to settle
+            new WaitCommand(0.25),
+            // Now drive backwards slowly until the platform is balanced
             new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
-            new WaitCommand(0.15)
-            .deadlineWith(
-                new SwerveJoystickCmd(
-                    swerveSubsystem,
-                    () -> getDriverMoveFwdBack(),
-                    () -> getDriverMoveLeftRight(),
-                    () -> getDriverRotate(),
-                    () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
-                )
-            ),
+            // Wait for the platform to be balanced
+            new BalanceWaitLevelCmd(swerveSubsystem, 1.0)
+                .deadlineWith(
+                    new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
+                ),
+            // Balanced - stop creeping
             new InstantCommand( ()->setCreep(0) ),
             new WaitCommand(0.15)
             .deadlineWith(
-                new SwerveJoystickCmd(
-                    swerveSubsystem,
-                    () -> getDriverMoveFwdBack(),
-                    () -> getDriverMoveLeftRight(),
-                    () -> getDriverRotate(),
-                    () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)
-                )
+                new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
             )
-        );
+    );
     }
 
     private Command AutoInnerCmd()
@@ -944,7 +934,7 @@ public class RobotContainer
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
-            ScoreHighProCmd().withTimeout(2.0),
+            ScoreHighProCmd().withTimeout(3.5),
             new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
@@ -1007,7 +997,7 @@ public class RobotContainer
         return new SequentialCommandGroup(
             new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
             new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
-            ScoreHighProCmd().withTimeout(2.0),
+            ScoreHighProCmd().withTimeout(3.5),
             new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
             autoBuilderCommand

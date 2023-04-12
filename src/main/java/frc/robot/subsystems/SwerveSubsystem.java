@@ -54,6 +54,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final Pigeon2 gyro = new Pigeon2( Constants.DriveConstants.gyroPort );
 
     private double yawOffset = 0;
+    private double pitchOffset = 0;
 
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0),new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
@@ -74,8 +75,15 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putData("Field", m_field);
     }
 
-    public double getPitch(){
-        return gyro.getPitch();
+    public double getPitch()
+    {
+        return gyro.getPitch() - pitchOffset;
+    }
+
+    public void initialPitch()
+    {
+        pitchOffset = gyro.getPitch();
+        System.out.println("initialPitch: " + pitchOffset);
     }
 
     public double getRate()

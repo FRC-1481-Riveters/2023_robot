@@ -6,24 +6,29 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class BalanceWaitLevelCmd extends CommandBase {
 
 private SwerveSubsystem m_Subsystem;
+private double m_balanceDegrees;
 
-    public BalanceWaitLevelCmd(SwerveSubsystem subsystem)
+    public BalanceWaitLevelCmd(SwerveSubsystem subsystem, double balanceDegrees)
     {
-       m_Subsystem = subsystem;
-        
+      m_Subsystem = subsystem;
+      m_balanceDegrees = balanceDegrees;
     }
     
     @Override
     public void initialize() 
     {
-      System.out.println("BalanceWaitLevelCmd started");
+      double angle;
+      angle = Math.abs(m_Subsystem.getPitch());
+      System.out.println("BalanceWaitLevelCmd started: angle=" + angle + ", target=" + m_balanceDegrees);
     }
   
     // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (Math.abs(m_Subsystem.getPitch()) < 3.5){
-      System.out.println("BalanceWaitLevelCmd finished"); 
+    double angle;
+    angle = Math.abs(m_Subsystem.getPitch());
+    if (angle < m_balanceDegrees){
+      System.out.println("BalanceWaitLevelCmd finished, angle=" + angle + ", target=" + m_balanceDegrees); 
       return true;
     }
     else{
