@@ -220,10 +220,13 @@ public class RobotContainer
     public void setCreep( double value )
     {
         m_dCreep = value;
-//        if( DriverStation.getAlliance() == DriverStation.Alliance.Blue )
-//            m_dCreep = -m_dCreep;
 
-        System.out.println("setCreep " + value);
+        if( DriverStation.getAlliance() == DriverStation.Alliance.Blue ){
+            m_dCreep = m_dCreep * 1.10;
+            //juice blue side a little higher
+        }
+           
+        System.out.println("setCreep " + m_dCreep);
     }
 
     private void configureButtonBindings() 
@@ -685,13 +688,11 @@ public class RobotContainer
             new ShoulderPositionCmd(shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_BETWEEN_STOWED_AND_LEVEL, true),
             // Move WRIST to CUBE PICKUP
             new WristPositionCmd(wristSubsystem, WristConstants.WRIST_POSITION_CUBE_PICKUP, true),
-            new ParallelCommandGroup (
-                // Move EXTEND to CUBE PICKUP
-                new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CUBE_PICKUP, true),
-                new InstantCommand( ()->wristSubsystem.setWrist(0) ),         
-                // Move SHOULDER to CUBE PICKUP
-                new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_CUBE_PICKUP, true)
-            )
+            // Move EXTEND to CUBE PICKUP
+            new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CUBE_PICKUP, true),
+            new InstantCommand( ()->wristSubsystem.setWrist(0) ),         
+            // Move SHOULDER to CUBE PICKUP
+            new ShoulderPositionCmd (shoulderSubsystem, ShoulderConstants.SHOULDER_POSITION_CUBE_PICKUP, true)
         );
     }
 
@@ -748,6 +749,7 @@ public class RobotContainer
         m_chooser.addOption("Balance + Mobility", AutoBalanceMobilityCmd());
         m_chooser.addOption("Inner", AutoInnerCmd());
         m_chooser.addOption("Outer", AutoOuterCmd());
+        m_chooser.addOption("Mobility", AutoMobilityCmd());
 
         // Put the chooser on the dashboard
         SmartDashboard.putData(m_chooser);
@@ -857,7 +859,7 @@ public class RobotContainer
             // After pathplanner mobility finishes halfway up the ramp, creep forward
             new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobility) ),
             // Wait for the platform to start tilting
-            new BalanceWaitLevelCmd(swerveSubsystem, 6.5)
+            new BalanceWaitLevelCmd(swerveSubsystem, 9.0)
                 .deadlineWith(
                     new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
                 ),
@@ -868,9 +870,9 @@ public class RobotContainer
                     new SwerveJoystickCmd( swerveSubsystem, () -> getDriverMoveFwdBack(), () -> getDriverMoveLeftRight(), () -> getDriverRotate(), () -> !driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx) )
                 ),
             // Once platform starts tilting, wait a little for it to settle
-            new WaitCommand(0.25),
+            new WaitCommand(1.0),
             // Now drive backwards slowly until the platform is balanced
-            new InstantCommand( ()->setCreep(-DriveConstants.CreepBalanceMobility * 0.6) ),
+            new InstantCommand( ()->setCreep(DriveConstants.CreepBalanceMobilityBackup) ),
             // Wait for the platform to be balanced
             new BalanceWaitLevelCmd(swerveSubsystem, 1.0)
                 .deadlineWith(
@@ -942,7 +944,7 @@ public class RobotContainer
             new ExtendPositionCmd (extendSubsystem, ExtendConstants.EXTEND_POSITION_CUBE_PICKUP, true),
             autoBuilderCommand,
             ScoreMidProCmd(),
-            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5)
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(3.0)
         );
     }
 
@@ -971,13 +973,13 @@ public class RobotContainer
             )
         );
 
-        eventMap.put("ScoreHigh2",
+        /*eventMap.put("ScoreHigh2",
             new SequentialCommandGroup(
                 ScoreMidProCmd(),
-                new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
+                new IntakeJogCmd( intakeSubsystem, false ).withTimeout(3.0),
                 StowCmdHigh()
             )
-        );
+        );*/
 
         // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
         SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
@@ -1000,6 +1002,48 @@ public class RobotContainer
             ScoreHighProCmd().withTimeout(3.5),
             new WaitCommand(0.5),
             new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.5),
+            autoBuilderCommand,
+            ScoreMidProCmd(),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(1.5),
+            StowCmdHigh()
+        );
+    }
+
+    private Command AutoMobilityCmd(){
+        // Load the PathPlanner path file and generate it with a max
+        // velocity and acceleration for every path in the group
+        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Mobility", 
+            new PathConstraints(0.55, 2.0));
+
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        //eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+        //eventMap.put("intakeDown", new IntakeDown());
+
+        // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
+        SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+            swerveSubsystem::getPose, // Pose2d supplier
+            swerveSubsystem::resetOdometry, // Pose2d consumer, used to reset odometry at the beginning of auto
+            DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+            new PIDConstants(AutoConstants.kPXController, 0.0, 0.0), // PID constants to correct for translation error (used to create the X and Y PID controllers)
+            new PIDConstants(AutoConstants.kPThetaController, 0.0, 0.0), // PID constants to correct for rotation error (used to create the rotation controller)
+            swerveSubsystem::setModuleStates, // Module states consumer used to output to the drive subsystem
+            eventMap,
+            true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
+            swerveSubsystem // The drive subsystem. Used to properly set the requirements of path following commands
+        );
+
+        Command autoBuilderCommand = autoBuilder.fullAuto(pathGroup);
+
+        return new SequentialCommandGroup(
+            new InstantCommand( () -> swerveSubsystem.zeroHeading(0.0) ),
+            new InstantCommand( () -> swerveSubsystem.initialPitch() ),
+            new InstantCommand( ()-> intakeSubsystem.setCone(false) ),
+            ScoreHighProCmd().withTimeout(3.5),
+            new IntakeJogCmd( intakeSubsystem, false ).withTimeout(0.3),
+            StowCmdHigh(),
+            new WaitCommand(7.0),
             autoBuilderCommand
         );
     }

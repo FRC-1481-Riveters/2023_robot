@@ -82,7 +82,8 @@ public final class Constants {
 
         public static final double CreepLoading = -0.37;
         public static final double CreepBalance = -0.30;
-        public static final double CreepBalanceMobility = 0.40;
+        public static final double CreepBalanceMobility = 0.35;
+        public static final double CreepBalanceMobilityBackup = -0.2;
 
     }
 
@@ -123,9 +124,9 @@ public final class Constants {
         public static final int SHOULDER_POSITION_TEST_15 = 1800;
         public static final int SHOULDER_POSITION_STOWED = 2329; //2428;
         public static final int SHOULDER_POSITION_SHELF_CUBE = SHOULDER_POSITION_STOWED - 715; //1650; //1700;   
-        public static final int SHOULDER_POSITION_SHELF_CONE = SHOULDER_POSITION_STOWED - 690; //1655; //1705;   
+        public static final int SHOULDER_POSITION_SHELF_CONE = SHOULDER_POSITION_STOWED - 755; //1655; //1705;   
         public static final int SHOULDER_POSITION_HIGH = SHOULDER_POSITION_STOWED - 842; //1538; //1588;   
-        public static final int SHOULDER_POSITION_HIGH_PRO = SHOULDER_POSITION_STOWED - 682; //1718; //1768;  
+        public static final int SHOULDER_POSITION_HIGH_PRO = SHOULDER_POSITION_STOWED - 667; //1718; //1768;  
         public static final int SHOULDER_POSITION_MID = SHOULDER_POSITION_STOWED - 740; //1640; //1690;   
         public static final int SHOULDER_POSITION_MID_PRO = SHOULDER_POSITION_STOWED - 522; //1858;//1908; 
         public static final int SHOULDER_POSITION_LOW = SHOULDER_POSITION_STOWED - 83; //2297; //2347;
@@ -158,7 +159,7 @@ public final class Constants {
         public static final int WRIST_POSITION_TEST_85 = 469;
         public static final int WRIST_POSITION_TEST_15 = 1702;
         public static final int WRIST_TOLERANCE = 50;
-        public static final int WRIST_POSITION_SHELF_CONE = 710;  
+        public static final int WRIST_POSITION_SHELF_CONE = 955;//710;  
         public static final int WRIST_POSITION_SHELF_CUBE = 749;  
         public static final int WRIST_POSITION_HIGH = 856;    
         public static final int WRIST_POSITION_HIGH_PRO = 463;
