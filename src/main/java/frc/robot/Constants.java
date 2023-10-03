@@ -113,9 +113,9 @@ public final class Constants {
         public static final double SHOULDER_MOTOR_KP_LOW = 10.0;
         public static final double SHOULDER_MOTOR_KI_LOW = 0.00;
         public static final double SHOULDER_MOTOR_KD_LOW = 0.40;
-        public static final double SHOULDER_MOTOR_KP_MID = 14.0;
+        public static final double SHOULDER_MOTOR_KP_MID = 10.0; //14.0;
         public static final double SHOULDER_MOTOR_KI_MID = 0.00;
-        public static final double SHOULDER_MOTOR_KD_MID = 0.23;
+        public static final double SHOULDER_MOTOR_KD_MID = 0.1; //0.23;
         public static final double SHOULDER_MOTOR_CRUISE = 200;
         public static final double SHOULDER_MOTOR_ACCELERATION = 400;
         public static final int SHOULDER_MOTOR_MIN = 1500;
