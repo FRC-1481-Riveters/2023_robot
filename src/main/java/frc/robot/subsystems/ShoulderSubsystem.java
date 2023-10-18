@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
-
+import org.littletonrobotics.junction.Logger;
 
 public class ShoulderSubsystem extends SubsystemBase {
 
@@ -88,8 +88,13 @@ public class ShoulderSubsystem extends SubsystemBase {
     @Override
     public void periodic() 
     {
-        nt_shoulder_pos.setDouble( m_shoulderMotor.getSelectedSensorPosition() );
-    }
+        double pos = m_shoulderMotor.getSelectedSensorPosition();
+        nt_shoulder_pos.setDouble( pos );
+        Logger.getInstance().recordOutput("ShoulderPosition", pos );
+        Logger.getInstance().recordOutput("ShoulderSetPoint", shoulderPosition);
+        Logger.getInstance().recordOutput("ShoulderOutput", nt_shoulder_set.getDouble(0) );
+   
+    }  
     public void selectShoulderPID( int range )
     {
         if( range == 0 )    // high

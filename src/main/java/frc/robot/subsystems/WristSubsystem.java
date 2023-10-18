@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import org.littletonrobotics.junction.Logger;
 
 
 public class WristSubsystem extends SubsystemBase {
@@ -83,7 +84,11 @@ public class WristSubsystem extends SubsystemBase {
     @Override
     public void periodic() 
     {
-        nt_wrist_pos.setDouble( m_wristMotor.getSelectedSensorPosition() );
+        double pos = m_wristMotor.getSelectedSensorPosition();
+        nt_wrist_pos.setDouble( pos );
+        Logger.getInstance().recordOutput("WristPosition", pos );
+        Logger.getInstance().recordOutput("WristSetPoint", wristPosition);
+        Logger.getInstance().recordOutput("WristOutput", nt_wrist_set.getDouble(0) );
     }
 
     public void setWrist( double minus_one_to_one )

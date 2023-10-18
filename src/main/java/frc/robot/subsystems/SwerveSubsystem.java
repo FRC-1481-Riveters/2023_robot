@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.SwerveModule;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveModule frontLeft = new SwerveModule(
@@ -124,13 +125,12 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic() {
         odometer.update(getRotation2d(), new SwerveModulePosition[]{frontLeft.getPosition(),frontRight.getPosition(),backLeft.getPosition(),backRight.getPosition()});
         m_field.setRobotPose(odometer.getPoseMeters());
+      
+        Logger.getInstance().recordOutput("MyPose2d", m_field.getRobotPose());
 
-        SmartDashboard.putNumber("Robot Heading", getRotation2d().getRadians() );
-        SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
-        frontLeft.printAngle();
-        frontRight.printAngle();
-        backLeft.printAngle();
-        backRight.printAngle();
+        // SwerveModuleState
+        Logger.getInstance().recordOutput("MySwerveModuleStates",
+             frontLeft.getState(), frontRight.getState(), backLeft.getState(), backRight.getState() );
     }
 
     public void stopModules() {

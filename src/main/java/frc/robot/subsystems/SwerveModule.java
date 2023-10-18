@@ -138,10 +138,6 @@ public class SwerveModule {
         return position * (absoluteEncoderReversed ? -1.0 : 1.0);
     }
 
-    public void printAngle() {
-        SmartDashboard.putNumber("Turning Position[" + absoluteEncoder.getDeviceID() + "]", turningMotor.getSelectedSensorPosition() /*getTurningPosition() */);
-    }
-
     public void resetEncoders() {
         double absPosition;
         // Clear the drive motor encoder position

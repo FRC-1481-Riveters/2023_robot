@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Timer;
+import org.littletonrobotics.junction.Logger;
 
 
 public class ExtendSubsystem extends SubsystemBase {
@@ -24,7 +25,7 @@ public class ExtendSubsystem extends SubsystemBase {
     private ShuffleboardTab tab;
     GenericEntry kP;
     private GenericEntry kI, kD, kCruise, kAcceleration;
-    private GenericEntry nt_extend_pos, nt_extend_set;
+    private GenericEntry nt_extend_pos, nt_extend_set, nt_extend_switch;
     private double extendPosition;
     private double shoulderCosine;
     private boolean limitSwitch_previous = true;
@@ -45,6 +46,7 @@ public class ExtendSubsystem extends SubsystemBase {
         kAcceleration = tab.add("extend_acceleration", ExtendConstants.EXTEND_MOTOR_ACCELERATION).getEntry();
         nt_extend_pos = tab.add("extend_pos",0).getEntry();
         nt_extend_set = tab.add("extend_set",0).getEntry();
+        nt_extend_switch = tab.add("extend_switch",0).getEntry();
          
         m_extendMotor.configFactoryDefault();
         m_extendMotor.setNeutralMode(NeutralMode.Brake);
@@ -82,7 +84,9 @@ public class ExtendSubsystem extends SubsystemBase {
     @Override
     public void periodic() 
     {
-        nt_extend_pos.setDouble( m_extendMotor.getSelectedSensorPosition() );
+        boolean extend_switch;
+        double pos = m_extendMotor.getSelectedSensorPosition();
+        nt_extend_pos.setDouble( pos );
         if (m_extendMotor.getControlMode() == ControlMode.MotionMagic )
         {
             m_extendMotor.set(ControlMode.MotionMagic, extendPosition, DemandType.ArbitraryFeedForward, -0.2 * shoulderCosine);
@@ -98,11 +102,17 @@ public class ExtendSubsystem extends SubsystemBase {
             // If the motor isn't in MotionMagic mode, reset its enable timer
             enableTimer.reset();
         }
-        if( (limitSwitch_di.get() == false) && (limitSwitch_previous == true) )
+        extend_switch = limitSwitch_di.get();
+        nt_extend_switch.setBoolean( extend_switch );
+        if( (extend_switch == false) && (limitSwitch_previous == true) )
         {
             limitSwitch_previous = false;
+            System.out.println("extend zero switch");
             zeroPosition();
         }
+        Logger.getInstance().recordOutput("ExtendPosition", pos );
+        Logger.getInstance().recordOutput("ExtendSetPoint", extendPosition);
+        Logger.getInstance().recordOutput("ExtendOutput", nt_extend_set.getDouble(0) );
     }
 
     public void setShoulder (double cosine)

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
 
+import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -39,11 +40,13 @@ public class IntakeSubsystem extends SubsystemBase {
         output = minus_one_to_one;
 
         m_intakeMotor.set(ControlMode.PercentOutput, output);
+        Logger.getInstance().recordOutput("IntakeSpeed", output );
     }
 
     public void setCone( boolean bHasCone )
     {
         m_hasCone = bHasCone;
+        Logger.getInstance().recordOutput("HasCone", bHasCone );
         System.out.println("setCone "  + bHasCone);
     }
     public boolean getCone()
